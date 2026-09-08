@@ -45,7 +45,7 @@ const USD_TO_XAF = 550;
 
 const SERVICES = {
   biometrie: {
-    usd: 1,
+    usd: 85,
     description: "Donnees biometriques"
   },
 
@@ -81,7 +81,7 @@ const NETWORKS = {
 
   BEN: {
     name: "Bénin",
-    prefix: "229",
+    prefix: "2290",
     currency: "XOF",
 
     networks: {
