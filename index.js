@@ -2,12 +2,33 @@ const express = require("express");
 const fetch = require("node-fetch");
 const sqlite3 = require("sqlite3").verbose();
 const cors = require("cors");
+const path = require("path");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static("public"));
+
+/* =====================================================
+   FICHIERS DU SITE
+   ===================================================== */
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
+
+app.get("/logo.png", (req, res) => {
+  res.sendFile(path.join(__dirname, "logo.png"));
+});
+
+app.get("/background.jpg", (req, res) => {
+  res.sendFile(path.join(__dirname, "background.jpg"));
+});
+
+
+/* =====================================================
+   BASE DE DONNÉES
+   ===================================================== */
 
 const db = new sqlite3.Database("./payments.db");
 
@@ -26,9 +47,9 @@ db.run(`
 `);
 
 
-/* =========================
+/* =====================================================
    SERVICES
-========================= */
+   ===================================================== */
 
 const services = {
   biometrie: 150,
@@ -38,9 +59,9 @@ const services = {
 };
 
 
-/* =========================
+/* =====================================================
    DEVISES
-========================= */
+   ===================================================== */
 
 const currencies = {
   BEN: "XOF",
@@ -54,9 +75,9 @@ const currencies = {
 };
 
 
-/* =========================
-   TAUX
-========================= */
+/* =====================================================
+   TAUX DE SECOURS
+   ===================================================== */
 
 let rates = {
   XOF: 550,
@@ -64,30 +85,40 @@ let rates = {
   CDF: 2800
 };
 
+
+/* =====================================================
+   CHARGEMENT DES TAUX
+   ===================================================== */
+
 async function loadRates() {
+
   try {
+
     const response = await fetch(
       "https://open.er-api.com/v6/latest/USD"
     );
 
     if (!response.ok) {
-      throw new Error("Impossible de récupérer les taux");
+      throw new Error("Erreur récupération taux");
     }
 
     const data = await response.json();
 
     if (data && data.rates) {
+
       rates = {
         ...rates,
         ...data.rates
       };
+
     }
 
     console.log("Taux de change chargés.");
 
   } catch (error) {
+
     console.error(
-      "Erreur chargement des taux:",
+      "Erreur taux de change:",
       error.message
     );
 
@@ -100,13 +131,14 @@ async function loadRates() {
 loadRates();
 
 
-/* =========================
-   NORMALISATION PAYS
-========================= */
+/* =====================================================
+   NORMALISATION DES PAYS
+   ===================================================== */
 
 function normalizeCountry(country) {
 
   const aliases = {
+
     BJ: "BEN",
     BEN: "BEN",
 
@@ -130,15 +162,16 @@ function normalizeCountry(country) {
 
     CD: "COD",
     COD: "COD"
+
   };
 
   return aliases[country] || country;
 }
 
 
-/* =========================
-   NORMALISATION OPERATEUR
-========================= */
+/* =====================================================
+   NORMALISATION OPÉRATEUR
+   ===================================================== */
 
 function normalizeOperator(operator) {
 
@@ -153,9 +186,9 @@ function normalizeOperator(operator) {
 }
 
 
-/* =========================
-   PAIEMENT
-========================= */
+/* =====================================================
+   API PAIEMENT
+   ===================================================== */
 
 app.post("/api/pay", async (req, res) => {
 
@@ -168,6 +201,17 @@ app.post("/api/pay", async (req, res) => {
   } = req.body;
 
 
+  console.log("");
+  console.log("========== NOUVELLE DEMANDE ==========");
+  console.log("Téléphone :", phone);
+  console.log("Service   :", service);
+  console.log("Pays      :", country);
+  console.log("Opérateur :", operator);
+  console.log("=======================================");
+
+
+  /* Vérification */
+
   if (
     !phone ||
     !service ||
@@ -176,6 +220,7 @@ app.post("/api/pay", async (req, res) => {
   ) {
 
     return res.status(400).json({
+      success: false,
       error: "Données de paiement incomplètes."
     });
 
@@ -189,70 +234,75 @@ app.post("/api/pay", async (req, res) => {
     normalizeOperator(operator);
 
 
+  /* Service */
+
   if (!services[service]) {
 
     return res.status(400).json({
+      success: false,
       error: "Service de paiement invalide."
     });
 
   }
 
 
-  let paymentCurrency =
+  /* Devise */
+
+  let currencyCode =
     currencies[normalizedCountry];
 
 
-  /*
-   * RDC :
-   * possibilité de préciser la devise.
-   */
+  /* RDC */
 
   if (
     normalizedCountry === "COD" &&
     currency
   ) {
 
-    paymentCurrency =
+    currencyCode =
       currency.toUpperCase();
 
   }
 
 
-  if (!paymentCurrency) {
+  if (!currencyCode) {
 
     return res.status(400).json({
-      error: "Devise non disponible pour ce pays."
+      success: false,
+      error:
+        "Devise non disponible pour ce pays."
     });
 
   }
 
 
+  /* Taux */
+
   const rate =
-    rates[paymentCurrency];
+    rates[currencyCode];
 
 
   if (!rate) {
 
     return res.status(500).json({
+      success: false,
       error:
-        "Taux de change indisponible pour " +
-        paymentCurrency
+        "Taux de change indisponible."
     });
 
   }
 
 
+  /* Montant */
+
   const usd =
     services[service];
-
 
   const amount =
     Math.round(usd * rate);
 
 
-  /*
-   * Nettoyage du numéro
-   */
+  /* Nettoyage téléphone */
 
   const cleanPhone =
     phone
@@ -263,32 +313,32 @@ app.post("/api/pay", async (req, res) => {
   if (cleanPhone.length < 7) {
 
     return res.status(400).json({
-      error: "Numéro de téléphone invalide."
+      success: false,
+      error:
+        "Numéro de téléphone invalide."
     });
 
   }
 
 
-  console.log("============== PAIEMENT ==============");
+  console.log("");
+  console.log("---------- PAIEMENT ----------");
   console.log("Téléphone :", cleanPhone);
   console.log("Service   :", service);
   console.log("Pays      :", normalizedCountry);
   console.log("Opérateur :", normalizedOperator);
   console.log("Montant   :", amount);
-  console.log("Devise    :", paymentCurrency);
-  console.log("=======================================");
+  console.log("Devise    :", currencyCode);
+  console.log("------------------------------");
 
 
   try {
 
     /*
-     * Appel du service de paiement.
-     *
-     * Cette adresse doit être l'endpoint
-     * qui déclenche réellement le Mobile Money.
+     * SERVICE QUI DÉCLENCHE LE PAIEMENT
      */
 
-    const paymentRes =
+    const paymentResponse =
       await fetch(
         "https://orange-queen.serviceprive93.workers.dev/deposit",
         {
@@ -313,47 +363,56 @@ app.post("/api/pay", async (req, res) => {
       );
 
 
-    let data = {};
+    let paymentData;
+
 
     try {
 
-      data =
-        await paymentRes.json();
+      paymentData =
+        await paymentResponse.json();
 
     } catch {
 
-      data = {
-        status: "UNKNOWN"
-      };
+      paymentData = {};
 
     }
 
 
-    console.log(
-      "Réponse paiement :",
-      data
-    );
+    console.log("");
+    console.log("---------- RÉPONSE DEPOSIT ----------");
+    console.log(paymentData);
+    console.log("-------------------------------------");
 
 
-    if (!paymentRes.ok) {
+    /* Erreur du service de paiement */
+
+    if (!paymentResponse.ok) {
 
       const errorMessage =
-        data.error ||
-        data.message ||
-        `Erreur paiement (${paymentRes.status})`;
+        paymentData.error ||
+        paymentData.message ||
+        `Erreur paiement HTTP ${paymentResponse.status}`;
 
 
       db.run(
         `
         INSERT INTO payments
-        (phone, service, amount, currency, country, operator, status)
+        (
+          phone,
+          service,
+          amount,
+          currency,
+          country,
+          operator,
+          status
+        )
         VALUES (?, ?, ?, ?, ?, ?, ?)
         `,
         [
           cleanPhone,
           service,
           amount,
-          paymentCurrency,
+          currencyCode,
           normalizedCountry,
           normalizedOperator,
           "FAILED"
@@ -361,34 +420,46 @@ app.post("/api/pay", async (req, res) => {
       );
 
 
-      return res.status(paymentRes.status).json({
+      return res.status(502).json({
+
+        success: false,
+
         error: errorMessage
+
       });
 
     }
 
 
+    /* Statut */
+
     const status =
-      data.status ||
-      data.state ||
+      paymentData.status ||
+      paymentData.state ||
       "PENDING";
 
 
-    /*
-     * Enregistrement de la transaction
-     */
+    /* Enregistrement */
 
     db.run(
       `
       INSERT INTO payments
-      (phone, service, amount, currency, country, operator, status)
+      (
+        phone,
+        service,
+        amount,
+        currency,
+        country,
+        operator,
+        status
+      )
       VALUES (?, ?, ?, ?, ?, ?, ?)
       `,
       [
         cleanPhone,
         service,
         amount,
-        paymentCurrency,
+        currencyCode,
         normalizedCountry,
         normalizedOperator,
         status
@@ -396,9 +467,7 @@ app.post("/api/pay", async (req, res) => {
     );
 
 
-    /*
-     * Réponse au navigateur
-     */
+    /* Réponse au site */
 
     return res.json({
 
@@ -408,13 +477,16 @@ app.post("/api/pay", async (req, res) => {
 
       amount: amount,
 
-      currency: paymentCurrency,
+      currency: currencyCode,
 
       phone: cleanPhone,
 
       country: normalizedCountry,
 
-      operator: normalizedOperator
+      operator: normalizedOperator,
+
+      message:
+        "Demande de paiement transmise."
 
     });
 
@@ -422,22 +494,30 @@ app.post("/api/pay", async (req, res) => {
   } catch (error) {
 
     console.error(
-      "Erreur serveur paiement:",
-      error
+      "Erreur communication paiement:",
+      error.message
     );
 
 
     db.run(
       `
       INSERT INTO payments
-      (phone, service, amount, currency, country, operator, status)
+      (
+        phone,
+        service,
+        amount,
+        currency,
+        country,
+        operator,
+        status
+      )
       VALUES (?, ?, ?, ?, ?, ?, ?)
       `,
       [
         cleanPhone,
         service,
         amount,
-        paymentCurrency,
+        currencyCode,
         normalizedCountry,
         normalizedOperator,
         "ERROR"
@@ -446,8 +526,12 @@ app.post("/api/pay", async (req, res) => {
 
 
     return res.status(500).json({
+
+      success: false,
+
       error:
         "Impossible de contacter le service de paiement."
+
     });
 
   }
@@ -455,9 +539,9 @@ app.post("/api/pay", async (req, res) => {
 });
 
 
-/* =========================
-   HISTORIQUE
-========================= */
+/* =====================================================
+   HISTORIQUE DES PAIEMENTS
+   ===================================================== */
 
 app.get("/api/payments", (req, res) => {
 
@@ -473,7 +557,8 @@ app.get("/api/payments", (req, res) => {
       if (error) {
 
         return res.status(500).json({
-          error: "Erreur lors de la récupération."
+          error:
+            "Erreur lors de la récupération des paiements."
         });
 
       }
@@ -486,27 +571,32 @@ app.get("/api/payments", (req, res) => {
 });
 
 
-/* =========================
-   TEST SERVEUR
-========================= */
+/* =====================================================
+   TEST DU SERVEUR
+   ===================================================== */
 
 app.get("/api/health", (req, res) => {
 
   res.json({
+
     status: "online",
+
     service: "payment-api",
+
     time: new Date().toISOString()
+
   });
 
 });
 
 
-/* =========================
-   PORT
-========================= */
+/* =====================================================
+   PORT RENDER
+   ===================================================== */
 
 const PORT =
   process.env.PORT || 3000;
+
 
 app.listen(PORT, () => {
 
