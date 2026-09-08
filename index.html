@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,15 +8,21 @@
 <title>Service de paiement</title>
 
 <style>
+
 * {
   box-sizing: border-box;
 }
 
 body {
   font-family: Arial, sans-serif;
+
   background:
-    linear-gradient(rgba(0,0,0,0.60), rgba(0,0,0,0.60)),
+    linear-gradient(
+      rgba(0,0,0,0.60),
+      rgba(0,0,0,0.60)
+    ),
     url("background.jpg") no-repeat center center;
+
   background-size: cover;
 
   display: flex;
@@ -29,134 +36,215 @@ body {
 
 .box {
   background: white;
+
   padding: 25px;
+
   border-radius: 12px;
+
   width: 100%;
   max-width: 400px;
+
   text-align: center;
 
-  box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+  box-shadow:
+    0 8px 30px rgba(0,0,0,0.25);
 }
 
 .logo {
   width: 100px;
   max-width: 100%;
+
   margin-bottom: 10px;
 }
 
 .title {
   font-weight: bold;
   font-size: 20px;
+
   margin-bottom: 8px;
 }
 
 .subtitle {
   font-size: 13px;
+
   color: #666;
+
   margin-bottom: 15px;
 }
 
 input,
 select {
+
   width: 100%;
+
   padding: 12px;
+
   margin-top: 10px;
 
   border-radius: 6px;
+
   border: 1px solid #ccc;
 
   font-size: 15px;
+
   background: white;
 }
 
 input:focus,
 select:focus {
+
   outline: none;
+
   border-color: #00bcd4;
 }
 
 .row {
+
   display: flex;
+
   gap: 6px;
 }
 
 .prefix {
+
   width: 32%;
+
   background: #eee;
+
   text-align: center;
 }
 
 .phone {
+
   width: 68%;
 }
 
 .amount-box {
+
   margin-top: 15px;
+
   padding: 12px;
 
   border-radius: 6px;
+
   background: #f4f4f4;
 
   font-weight: bold;
+
   font-size: 16px;
 }
 
 button {
+
   width: 100%;
+
   padding: 14px;
+
   margin-top: 15px;
 
   background: #00bcd4;
+
   color: white;
 
   border: none;
+
   border-radius: 6px;
 
   font-weight: bold;
+
   font-size: 16px;
 
   cursor: pointer;
 }
 
 button:hover {
+
   opacity: 0.9;
 }
 
 button:disabled {
+
   opacity: 0.6;
+
   cursor: not-allowed;
 }
 
 #result {
+
   margin-top: 15px;
+
   font-weight: bold;
+
   font-size: 14px;
+
   line-height: 1.5;
+
+  min-height: 22px;
+}
+
+.status-box {
+
+  margin-top: 12px;
+
+  padding: 12px;
+
+  border-radius: 8px;
+
+  background: #f5f5f5;
+
+  font-size: 13px;
+
+  line-height: 1.5;
+
+  display: none;
+}
+
+.reference {
+
+  font-size: 11px;
+
+  color: #777;
+
+  word-break: break-all;
+
+  margin-top: 6px;
 }
 
 .notice {
+
   margin-top: 12px;
+
   font-size: 11px;
+
   color: #777;
+
   line-height: 1.4;
 }
 
 .footer {
+
   position: fixed;
+
   bottom: 8px;
 
   width: 100%;
 
   text-align: center;
+
   color: white;
 
   font-size: 11px;
+
   padding: 0 10px;
 }
+
 </style>
+
 </head>
 
+
 <body>
+
 
 <div class="box">
 
@@ -166,9 +254,11 @@ button:disabled {
     alt="Logo"
   >
 
+
   <div class="title">
     Service de paiement
   </div>
+
 
   <div class="subtitle">
     Sélectionnez le service et votre moyen de paiement.
@@ -180,19 +270,19 @@ button:disabled {
   <select id="service">
 
     <option value="biometrie">
-      Données biométriques - 1 USD
+      Données biométriques - 2 USD
     </option>
 
     <option value="langue">
-      Test de langue - 150 USD
+      Test de langue - 2 USD
     </option>
 
     <option value="administratif">
-      Droit administratif - 220 USD
+      Droit administratif - 2 USD
     </option>
 
     <option value="total">
-      Tout payer - 520 USD
+      Tout payer - 2 USD
     </option>
 
   </select>
@@ -286,6 +376,23 @@ button:disabled {
   <p id="result"></p>
 
 
+  <!-- STATUT -->
+
+  <div
+    id="statusBox"
+    class="status-box"
+  >
+
+    <div id="statusText"></div>
+
+    <div
+      id="referenceText"
+      class="reference"
+    ></div>
+
+  </div>
+
+
   <div class="notice">
 
     Le paiement est traité de manière sécurisée.
@@ -297,11 +404,15 @@ button:disabled {
 
 
 <div class="footer">
+
   © 2026 — Service de paiement sécurisé
+
 </div>
 
 
+
 <script>
+
 
 /* =====================================================
    SERVICES
@@ -311,25 +422,26 @@ const services = {
 
   biometrie: {
     name: "Données biométriques",
-    usd: 1
+    usd: 2
   },
 
   langue: {
     name: "Test de langue",
-    usd: 150
+    usd: 2
   },
 
   administratif: {
     name: "Droit administratif",
-    usd: 220
+    usd: 2
   },
 
   total: {
     name: "Tout payer",
-    usd: 520
+    usd: 2
   }
 
 };
+
 
 
 /* =====================================================
@@ -339,138 +451,188 @@ const services = {
 const countries = {
 
   BEN: {
+
     prefix: "229",
 
     networks: [
+
       {
         value: "mtn",
         label: "MTN BENIN"
       },
+
       {
         value: "moov",
         label: "MOOV BENIN"
       },
+
       {
         value: "celtiis",
         label: "CELTIIS BENIN"
       }
+
     ]
+
   },
 
+
   CIV: {
+
     prefix: "225",
 
     networks: [
+
       {
         value: "mtn",
         label: "MTN CI"
       },
+
       {
         value: "orange",
         label: "ORANGE CI"
       },
+
       {
         value: "moov",
         label: "MOOV CI"
       },
+
       {
         value: "wave",
         label: "WAVE CI"
       }
+
     ]
+
   },
 
+
   SEN: {
+
     prefix: "221",
 
     networks: [
+
       {
         value: "orange",
         label: "ORANGE SENEGAL"
       },
+
       {
         value: "wave",
         label: "WAVE SENEGAL"
       },
+
       {
         value: "free",
         label: "FREE SENEGAL"
       }
+
     ]
+
   },
 
+
   CMR: {
+
     prefix: "237",
 
     networks: [
+
       {
         value: "mtn",
         label: "MTN CAMEROUN"
       },
+
       {
         value: "orange",
         label: "ORANGE CAMEROUN"
       }
+
     ]
+
   },
 
+
   GAB: {
+
     prefix: "241",
 
     networks: [
+
       {
         value: "airtel",
         label: "AIRTEL GABON"
       }
+
     ]
+
   },
 
+
   COG: {
+
     prefix: "242",
 
     networks: [
+
       {
         value: "mtn",
         label: "MTN CONGO"
       }
+
     ]
+
   },
 
+
   COD: {
+
     prefix: "243",
 
     networks: [
+
       {
         value: "vodacom",
         label: "VODACOM RDC"
       },
+
       {
         value: "orange",
         label: "ORANGE RDC"
       },
+
       {
         value: "airtel",
         label: "AIRTEL RDC"
       }
+
     ]
+
   }
 
 };
 
 
+
 /* =====================================================
-   TAUX D'AFFICHAGE
-   ===================================================== */
+   TAUX
+===================================================== */
 
 const rates = {
+
   XOF: 550,
+
   XAF: 550,
+
   CDF: 2800
+
 };
 
 
+
 /* =====================================================
-   ELEMENTS HTML
+   ELEMENTS
 ===================================================== */
 
 const service =
@@ -497,39 +659,80 @@ const result =
 const payButton =
   document.getElementById("payButton");
 
+const statusBox =
+  document.getElementById("statusBox");
 
-let finalAmount = 0;
-let paymentInProgress = false;
+const statusText =
+  document.getElementById("statusText");
+
+const referenceText =
+  document.getElementById("referenceText");
+
 
 
 /* =====================================================
-   DEVISE DU PAYS
+   VARIABLES
+===================================================== */
+
+let finalAmount = 0;
+
+let paymentInProgress = false;
+
+let statusTimer = null;
+
+let statusAttempts = 0;
+
+const MAX_STATUS_ATTEMPTS = 20;
+
+
+
+/* =====================================================
+   DEVISE
 ===================================================== */
 
 function getCurrency(countryCode) {
 
   if (
+
     countryCode === "BEN" ||
+
     countryCode === "CIV" ||
+
     countryCode === "SEN"
+
   ) {
+
     return "XOF";
+
   }
+
 
   if (
+
     countryCode === "CMR" ||
+
     countryCode === "GAB" ||
+
     countryCode === "COG"
+
   ) {
+
     return "XAF";
+
   }
+
 
   if (countryCode === "COD") {
+
     return "CDF";
+
   }
 
+
   return "XOF";
+
 }
+
 
 
 /* =====================================================
@@ -547,9 +750,13 @@ function updateCountry() {
   operator.innerHTML = "";
 
   if (!data) {
+
     prefix.value = "";
+
     return;
+
   }
+
 
   prefix.value =
     "+" + data.prefix;
@@ -573,8 +780,9 @@ function updateCountry() {
 }
 
 
+
 /* =====================================================
-   CALCUL DU MONTANT
+   MONTANT
 ===================================================== */
 
 function updateAmount() {
@@ -586,14 +794,18 @@ function updateAmount() {
     services[selectedService];
 
   if (!serviceData) {
+
     return;
+
   }
+
 
   const currency =
     getCurrency(country.value);
 
   const rate =
     rates[currency] || 550;
+
 
   finalAmount =
     Math.round(
@@ -603,28 +815,37 @@ function updateAmount() {
 
   displayAmount.textContent =
     "Montant à payer : " +
+
     finalAmount.toLocaleString("fr-FR") +
+
     " " +
+
     currency;
 
 }
 
 
+
 /* =====================================================
-   VALIDATION TELEPHONE
+   TELEPHONE
 ===================================================== */
 
 function getPhoneNumber() {
 
   let number =
     phone.value
+
       .trim()
+
       .replace(/\s+/g, "")
+
       .replace(/^\+/, "");
 
 
   if (!number) {
+
     return null;
+
   }
 
 
@@ -634,8 +855,11 @@ function getPhoneNumber() {
   const countryData =
     countries[countryCode];
 
+
   if (!countryData) {
+
     return null;
+
   }
 
 
@@ -644,7 +868,7 @@ function getPhoneNumber() {
 
 
   /*
-   * Si l'utilisateur écrit déjà
+   * Si le numéro contient déjà
    * le préfixe international,
    * on ne le double pas.
    */
@@ -662,22 +886,366 @@ function getPhoneNumber() {
 
 
   /*
-   * Vérification basique
+   * Vérification numérique
    */
 
   if (!/^[0-9]+$/.test(number)) {
+
     return null;
+
   }
 
 
   if (number.length < 6) {
+
     return null;
+
   }
 
 
   return prefixNumber + number;
 
 }
+
+
+
+/* =====================================================
+   AFFICHAGE STATUT
+===================================================== */
+
+function showStatusBox() {
+
+  statusBox.style.display =
+    "block";
+
+}
+
+
+function hideStatusBox() {
+
+  statusBox.style.display =
+    "none";
+
+  statusText.textContent =
+    "";
+
+  referenceText.textContent =
+    "";
+
+}
+
+
+
+/* =====================================================
+   ARRET DU TIMER
+===================================================== */
+
+function stopStatusChecking() {
+
+  if (statusTimer) {
+
+    clearInterval(statusTimer);
+
+    statusTimer = null;
+
+  }
+
+}
+
+
+
+/* =====================================================
+   VERIFICATION DU STATUT
+===================================================== */
+
+async function checkPaymentStatus(reference) {
+
+  try {
+
+    const response =
+      await fetch(
+        "/api/payment-status/" +
+        encodeURIComponent(reference)
+      );
+
+
+    const data =
+      await response.json();
+
+
+    console.log(
+      "Statut paiement :",
+      data
+    );
+
+
+    if (!response.ok) {
+
+      throw new Error(
+
+        data.error ||
+
+        data.message ||
+
+        "Impossible de vérifier le paiement."
+
+      );
+
+    }
+
+
+    const status =
+      String(
+        data.status || "PENDING"
+      ).toUpperCase();
+
+
+    /*
+     * PAIEMENT REUSSI
+     */
+
+    if (status === "SUCCESSFUL") {
+
+      stopStatusChecking();
+
+      paymentInProgress =
+        false;
+
+      payButton.disabled =
+        false;
+
+      payButton.textContent =
+        "Payer maintenant";
+
+
+      result.style.color =
+        "green";
+
+
+      result.textContent =
+        "✓ Paiement confirmé avec succès.";
+
+
+      showStatusBox();
+
+
+      statusText.style.color =
+        "green";
+
+
+      statusText.innerHTML =
+        "✓ <strong>Paiement confirmé</strong><br>" +
+
+        "Votre paiement a été accepté.";
+
+      
+      referenceText.textContent =
+        "Référence : " +
+        reference;
+
+
+      return;
+
+    }
+
+
+
+    /*
+     * PAIEMENT ECHOUE / ANNULE
+     */
+
+    if (status === "FAILED") {
+
+      stopStatusChecking();
+
+      paymentInProgress =
+        false;
+
+      payButton.disabled =
+        false;
+
+      payButton.textContent =
+        "Payer maintenant";
+
+
+      result.style.color =
+        "red";
+
+
+      result.textContent =
+        "✗ Le paiement n'a pas abouti.";
+
+
+      showStatusBox();
+
+
+      statusText.style.color =
+        "red";
+
+
+      const reason =
+        data.reason ||
+        data.message ||
+        "Paiement refusé ou annulé.";
+
+
+      statusText.innerHTML =
+        "✗ <strong>Paiement échoué</strong><br>" +
+
+        reason;
+
+
+      referenceText.textContent =
+        "Référence : " +
+        reference;
+
+
+      return;
+
+    }
+
+
+
+    /*
+     * PAIEMENT EN ATTENTE
+     */
+
+    result.style.color =
+      "orange";
+
+
+    result.textContent =
+      "⏳ Paiement en attente. " +
+
+      "Vérifiez votre téléphone.";
+
+
+    showStatusBox();
+
+
+    statusText.style.color =
+      "orange";
+
+
+    statusText.innerHTML =
+      "⏳ <strong>Paiement en attente</strong><br>" +
+
+      "Veuillez confirmer le paiement sur votre téléphone.";
+
+
+    referenceText.textContent =
+      "Référence : " +
+      reference;
+
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Erreur vérification statut :",
+      error
+    );
+
+    /*
+     * On ne considère PAS automatiquement
+     * le paiement comme échoué simplement
+     * parce que la vérification rencontre
+     * une erreur réseau.
+     */
+
+  }
+
+}
+
+
+
+/* =====================================================
+   DEMARRAGE VERIFICATION
+===================================================== */
+
+function startStatusChecking(reference) {
+
+  stopStatusChecking();
+
+  statusAttempts = 0;
+
+
+  /*
+   * Première vérification après 3 secondes
+   */
+
+  statusTimer =
+    setInterval(
+      async function() {
+
+        statusAttempts++;
+
+
+        if (
+          statusAttempts >
+          MAX_STATUS_ATTEMPTS
+        ) {
+
+          stopStatusChecking();
+
+
+          paymentInProgress =
+            false;
+
+          payButton.disabled =
+            false;
+
+          payButton.textContent =
+            "Payer maintenant";
+
+
+          result.style.color =
+            "orange";
+
+
+          result.textContent =
+            "⏳ Le paiement est toujours en attente. " +
+
+            "Vous pouvez vérifier votre téléphone.";
+
+          
+          showStatusBox();
+
+
+          statusText.style.color =
+            "orange";
+
+
+          statusText.innerHTML =
+            "Le statut n'a pas encore été confirmé. " +
+
+            "Si vous avez effectué le paiement, " +
+
+            "attendez quelques instants puis réessayez.";
+
+          
+          referenceText.textContent =
+            "Référence : " +
+            reference;
+
+
+          return;
+
+        }
+
+
+        await checkPaymentStatus(
+          reference
+        );
+
+
+      },
+      3000
+    );
+
+}
+
 
 
 /* =====================================================
@@ -687,7 +1255,9 @@ function getPhoneNumber() {
 async function payer() {
 
   if (paymentInProgress) {
+
     return;
+
   }
 
 
@@ -697,12 +1267,14 @@ async function payer() {
 
   if (!phoneNumber) {
 
-    result.style.color = "red";
+    result.style.color =
+      "red";
 
     result.textContent =
       "Veuillez entrer un numéro de téléphone valide.";
 
     return;
+
   }
 
 
@@ -718,35 +1290,56 @@ async function payer() {
 
   if (!selectedOperator) {
 
-    result.style.color = "red";
+    result.style.color =
+      "red";
 
     result.textContent =
       "Veuillez sélectionner votre opérateur.";
 
     return;
+
   }
 
 
   if (!services[selectedService]) {
 
-    result.style.color = "red";
+    result.style.color =
+      "red";
 
     result.textContent =
       "Service de paiement invalide.";
 
     return;
+
   }
 
 
-  paymentInProgress = true;
+  /*
+   * Nouvelle tentative :
+   * on arrête une éventuelle ancienne
+   * vérification.
+   */
 
-  payButton.disabled = true;
+  stopStatusChecking();
+
+  hideStatusBox();
+
+
+  paymentInProgress =
+    true;
+
+
+  payButton.disabled =
+    true;
+
 
   payButton.textContent =
     "Traitement en cours...";
 
 
-  result.style.color = "#333";
+  result.style.color =
+    "#333";
+
 
   result.textContent =
     "Connexion au serveur de paiement...";
@@ -754,92 +1347,144 @@ async function payer() {
 
   try {
 
+
     /*
-     * IMPORTANT :
-     * On appelle notre serveur.
+     * Envoi au serveur.
      *
-     * index.js reçoit cette requête
-     * sur /api/pay.
+     * IMPORTANT :
+     * La clé FeexPay reste sur le serveur.
      */
 
     const response =
-      await fetch("/api/pay", {
+      await fetch(
+        "/api/pay",
+        {
 
-        method: "POST",
+          method: "POST",
 
-        headers: {
-          "Content-Type": "application/json"
-        },
+          headers: {
 
-        body: JSON.stringify({
+            "Content-Type":
+              "application/json"
 
-          phone: phoneNumber,
+          },
 
-          service: selectedService,
+          body: JSON.stringify({
 
-          country: selectedCountry,
+            phone:
+              phoneNumber,
 
-          operator: selectedOperator
+            service:
+              selectedService,
 
-        })
+            country:
+              selectedCountry,
 
-      });
+            operator:
+              selectedOperator
 
+          })
 
-    /*
-     * Récupération de la réponse
-     */
+        }
+      );
+
 
     const data =
       await response.json();
 
 
+    console.log(
+      "Réponse paiement :",
+      data
+    );
+
+
     if (!response.ok) {
 
       throw new Error(
+
         data.error ||
+
         data.message ||
+
         "Le serveur a refusé la demande."
+
       );
 
     }
 
 
     /*
-     * Le serveur a accepté
-     * la demande de paiement.
+     * Le serveur doit retourner
+     * la référence FeexPay.
      */
 
-    if (
-      data.status === "PENDING" ||
-      data.status === "pending" ||
-      data.status === "SUCCESS" ||
-      data.status === "success" ||
-      data.status === "ACCEPTED" ||
-      data.status === "accepted"
-    ) {
+    const reference =
+      data.reference;
 
-      result.style.color =
-        "green";
 
-      result.textContent =
-        "✓ Demande de paiement envoyée. " +
-        "Vérifiez votre téléphone et confirmez " +
-        "le paiement avec votre code PIN.";
+    if (!reference) {
+
+      throw new Error(
+
+        "La référence de paiement n'a pas été reçue."
+
+      );
 
     }
 
-    else {
 
-      result.style.color =
-        "orange";
+    /*
+     * DEMANDE ACCEPTEE
+     */
 
-      result.textContent =
-        "Demande reçue. Statut : " +
-        (data.status || "en attente") +
-        ".";
+    result.style.color =
+      "green";
 
-    }
+
+    result.textContent =
+      "✓ Demande de paiement envoyée. " +
+
+      "Vérifiez votre téléphone et confirmez " +
+
+      "le paiement avec votre code PIN.";
+
+
+    showStatusBox();
+
+
+    statusText.style.color =
+      "orange";
+
+
+    statusText.innerHTML =
+      "⏳ <strong>En attente de confirmation</strong><br>" +
+
+      "Une demande de paiement a été envoyée sur votre téléphone.";
+
+
+    referenceText.textContent =
+      "Référence : " +
+      reference;
+
+
+    /*
+     * IMPORTANT :
+     * On ne libère PAS le bouton ici.
+     *
+     * Le paiement est encore PENDING.
+     *
+     * On démarre donc la vérification
+     * automatique auprès du serveur.
+     */
+
+    payButton.textContent =
+      "Vérification du paiement...";
+
+
+    startStatusChecking(
+      reference
+    );
 
 
   }
@@ -852,8 +1497,24 @@ async function payer() {
     );
 
 
+    stopStatusChecking();
+
+
+    paymentInProgress =
+      false;
+
+
+    payButton.disabled =
+      false;
+
+
+    payButton.textContent =
+      "Payer maintenant";
+
+
     result.style.color =
       "red";
+
 
     result.textContent =
       "❌ " +
@@ -861,21 +1522,8 @@ async function payer() {
 
   }
 
-
-  finally {
-
-    paymentInProgress =
-      false;
-
-    payButton.disabled =
-      false;
-
-    payButton.textContent =
-      "Payer maintenant";
-
-  }
-
 }
+
 
 
 /* =====================================================
@@ -887,6 +1535,7 @@ country.addEventListener(
   function() {
 
     updateCountry();
+
     updateAmount();
 
   }
@@ -905,6 +1554,7 @@ payButton.addEventListener(
 );
 
 
+
 /* =====================================================
    INITIALISATION
 ===================================================== */
@@ -913,7 +1563,11 @@ updateCountry();
 
 updateAmount();
 
+hideStatusBox();
+
+
 </script>
 
 </body>
+
 </html>
