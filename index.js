@@ -1,11 +1,13 @@
-"use strict";
-
 const express = require("express");
+const fetch = require("node-fetch");
+const sqlite3 = require("sqlite3").verbose();
 const cors = require("cors");
 const path = require("path");
-const sqlite3 = require("sqlite3").verbose();
 
 const app = express();
+
+app.use(cors());
+app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 
@@ -15,323 +17,344 @@ const FEEXPAY_SHOP_ID = process.env.FEEXPAY_SHOP_ID;
 const FEEXPAY_BASE =
   "https://api-v2.feexpay.me/api/transactions/public";
 
-const FEEXPAY_STATUS_BASE =
+const STATUS_BASE =
   "https://api-v2.feexpay.me/api/transactions/public/single/status";
 
-const PUBLIC_URL =
-  process.env.PUBLIC_URL || `http://localhost:${PORT}`;
+/* =========================================================
+   CONFIGURATION
+========================================================= */
+
+if (!FEEXPAY_API_KEY) {
+  console.error("ERREUR : FEEXPAY_API_KEY manquante.");
+} else {
+  console.log("FeexPay : API KEY OK");
+}
+
+if (!FEEXPAY_SHOP_ID) {
+  console.error("ERREUR : FEEXPAY_SHOP_ID manquant.");
+} else {
+  console.log("Shop ID : SHOP ID OK");
+}
 
 const USD_TO_XOF = 550;
 const USD_TO_XAF = 550;
 
-const MIN_AMOUNT = 100;
-const MAX_AMOUNT = 2000000;
-
-// ----------------------------------------------------
-// SERVICES
-// ----------------------------------------------------
+/* =========================================================
+   SERVICES
+========================================================= */
 
 const SERVICES = {
   biometrie: {
-    name: "Biométrie",
-    usd: 1
+    usd: 1,
+    description: "Donnees biometriques"
   },
 
   langue: {
-    name: "Test de langue",
-    usd: 150
+    usd: 150,
+    description: "Test de langue"
   },
 
   administratif: {
-    name: "Frais administratifs",
-    usd: 220
+    usd: 220,
+    description: "Frais administratifs"
+  },
+
+  total: {
+    usd: 520,
+    description: "Paiement services"
   }
 };
 
-// ----------------------------------------------------
-// RÉSEAUX FEEXPAY
-// ----------------------------------------------------
+/* =========================================================
+   RESEAUX FEEXPAY
+=========================================================
+
+   Chaque réseau possède son propre endpoint.
+
+   Sénégal :
+   - Orange Sénégal
+   - Wave Sénégal
+   - Free Sénégal
+========================================================= */
 
 const NETWORKS = {
-  BEN: {
-    country: "Bénin",
-    currency: "XOF",
-    prefix: "229",
-    nationalLength: 10,
 
-    operators: {
+  BEN: {
+    name: "Bénin",
+    prefix: "229",
+    currency: "XOF",
+
+    networks: {
+
       mtn: {
-        name: "MTN Bénin",
-        endpoint: "/requesttopay/mtn",
-        requiresOtp: false,
-        paymentUrl: false
+        label: "MTN Bénin",
+        endpoint:
+          `${FEEXPAY_BASE}/requesttopay/mtn`
       },
 
       moov: {
-        name: "Moov Bénin",
-        endpoint: "/requesttopay/moov",
-        requiresOtp: false,
-        paymentUrl: false
+        label: "Moov Bénin",
+        endpoint:
+          `${FEEXPAY_BASE}/requesttopay/moov`
       },
 
-      celtiis_bj: {
-        name: "Celtiis Bénin",
-        endpoint: "/requesttopay/celtiis_bj",
-        requiresOtp: false,
-        paymentUrl: false
-      },
-
-      coris: {
-        name: "Coris Bénin",
-        endpoint: "/requesttopay/coris",
-        requiresOtp: false,
-        paymentUrl: false
+      celtiis: {
+        label: "Celtiis Bénin",
+        endpoint:
+          `${FEEXPAY_BASE}/requesttopay/celtiis_bj`
       }
     }
   },
 
-  TGO: {
-    country: "Togo",
-    currency: "XOF",
-    prefix: "228",
-    nationalLength: 8,
-
-    operators: {
-      togocom_tg: {
-        name: "Togocom",
-        endpoint: "/requesttopay/togocom_tg",
-        requiresOtp: false,
-        paymentUrl: false
-      },
-
-      moov_tg: {
-        name: "Moov Togo",
-        endpoint: "/requesttopay/moov_tg",
-        requiresOtp: false,
-        paymentUrl: false
-      }
-    }
-  },
 
   CIV: {
-    country: "Côte d'Ivoire",
-    currency: "XOF",
+    name: "Côte d'Ivoire",
     prefix: "225",
-    nationalLength: 10,
-
-    operators: {
-      mtn_ci: {
-        name: "MTN Côte d'Ivoire",
-        endpoint: "/requesttopay/mtn_ci",
-        requiresOtp: false,
-        paymentUrl: false
-      },
-
-      moov_ci: {
-        name: "Moov Côte d'Ivoire",
-        endpoint: "/requesttopay/moov_ci",
-        requiresOtp: false,
-        paymentUrl: true
-      },
-
-      wave_ci: {
-        name: "Wave Côte d'Ivoire",
-        endpoint: "/requesttopay/wave_ci",
-        requiresOtp: false,
-        paymentUrl: true
-      },
-
-      orange_ci: {
-        name: "Orange Money Côte d'Ivoire",
-        endpoint: "/requesttopay/orange_ci",
-        requiresOtp: false,
-        paymentUrl: true
-      }
-    }
-  },
-
-  CG: {
-    country: "Congo Brazzaville",
-    currency: "XAF",
-    prefix: "242",
-    nationalLength: 12,
-
-    operators: {
-      mtn_cg: {
-        name: "MTN Congo",
-        endpoint: "/requesttopay/mtn_cg",
-        requiresOtp: false,
-        paymentUrl: false
-      }
-    }
-  },
-
-  SEN: {
-    country: "Sénégal",
     currency: "XOF",
-    prefix: "221",
-    nationalLength: 9,
 
-    operators: {
-      orange_sn: {
-        name: "Orange Sénégal",
-        endpoint: "/requesttopay/orange_sn",
-        requiresOtp: false,
-        paymentUrl: true
+    networks: {
+
+      mtn: {
+        label: "MTN Côte d'Ivoire",
+        endpoint:
+          `${FEEXPAY_BASE}/requesttopay/mtn_ci`
       },
 
-      wave_sn: {
-        name: "Wave Sénégal",
-        endpoint: "/requesttopay/wave_sn",
-        requiresOtp: false,
-        paymentUrl: true
+      moov: {
+        label: "Moov Côte d'Ivoire",
+        endpoint:
+          `${FEEXPAY_BASE}/requesttopay/moov_ci`
       },
 
-      free_sn: {
-        name: "Free Money Sénégal",
-        endpoint: "/requesttopay/free_sn",
-        requiresOtp: false,
-        paymentUrl: false
+      orange: {
+        label: "Orange Côte d'Ivoire",
+        endpoint:
+          `${FEEXPAY_BASE}/requesttopay/orange_ci`
+      },
+
+      wave: {
+        label: "Wave Côte d'Ivoire",
+        endpoint:
+          `${FEEXPAY_BASE}/requesttopay/wave_ci`
       }
     }
   },
+
 
   BF: {
-    country: "Burkina Faso",
-    currency: "XOF",
+    name: "Burkina Faso",
     prefix: "226",
-    nationalLength: 8,
+    currency: "XOF",
 
-    operators: {
-      moov_bf: {
-        name: "Moov Burkina Faso",
-        endpoint: "/requesttopay/moov_bf",
-        requiresOtp: false,
-        paymentUrl: false
+    networks: {
+
+      moov: {
+        label: "Moov Burkina Faso",
+        endpoint:
+          `${FEEXPAY_BASE}/requesttopay/moov_bf`
       },
 
-      orange_bf: {
-        name: "Orange Burkina Faso",
-        endpoint: "/requesttopay/orange_bf",
-        requiresOtp: true,
-        paymentUrl: false
-      },
-
-      wave_bf: {
-        name: "Wave Burkina Faso",
-        endpoint: "/requesttopay/wave_bf",
-        requiresOtp: false,
-        paymentUrl: true
+      orange: {
+        label: "Orange Burkina Faso",
+        endpoint:
+          `${FEEXPAY_BASE}/requesttopay/orange_bf`
       }
     }
   },
 
-  MLI: {
-    country: "Mali",
-    currency: "XOF",
-    prefix: "223",
-    nationalLength: 8,
 
-    operators: {
-      orange_ml: {
-        name: "Orange Mali",
-        endpoint: "/requesttopay/orange_ml",
-        requiresOtp: false,
-        paymentUrl: false
+  COG: {
+    name: "Congo-Brazzaville",
+    prefix: "242",
+    currency: "XAF",
+
+    networks: {
+
+      mtn: {
+        label: "MTN Congo",
+        endpoint:
+          `${FEEXPAY_BASE}/requesttopay/mtn_cg`
+      }
+    }
+  },
+
+
+  SEN: {
+    name: "Sénégal",
+    prefix: "221",
+    currency: "XOF",
+
+    networks: {
+
+      orange: {
+        label: "Orange Sénégal",
+        endpoint:
+          `${FEEXPAY_BASE}/requesttopay/orange_sn`
       },
 
-      moov_ml: {
-        name: "Moov Mali",
-        endpoint: "/requesttopay/moov_ml",
-        requiresOtp: false,
-        paymentUrl: false
+      wave: {
+        label: "Wave Sénégal",
+        endpoint:
+          `${FEEXPAY_BASE}/requesttopay/wave_sn`
+      },
+
+      free: {
+        label: "Free Sénégal",
+        endpoint:
+          `${FEEXPAY_BASE}/requesttopay/free_sn`
+      }
+    }
+  },
+
+
+  TGO: {
+    name: "Togo",
+    prefix: "228",
+    currency: "XOF",
+
+    networks: {
+
+      togocom: {
+        label: "Togocom",
+        endpoint:
+          `${FEEXPAY_BASE}/requesttopay/togocom_tg`
+      },
+
+      moov: {
+        label: "Moov Togo",
+        endpoint:
+          `${FEEXPAY_BASE}/requesttopay/moov_tg`
+      }
+    }
+  },
+
+
+  MLI: {
+    name: "Mali",
+    prefix: "223",
+    currency: "XOF",
+
+    networks: {
+
+      orange: {
+        label: "Orange Mali",
+        endpoint:
+          `${FEEXPAY_BASE}/requesttopay/orange_ml`
+      },
+
+      moov: {
+        label: "Moov Mali",
+        endpoint:
+          `${FEEXPAY_BASE}/requesttopay/moov_ml`
       }
     }
   }
 };
 
-// ----------------------------------------------------
-// MIDDLEWARE
-// ----------------------------------------------------
+/* =========================================================
+   BASE DE DONNEES
+========================================================= */
 
-app.use(cors());
-app.use(express.json({ limit: "1mb" }));
-app.use(express.urlencoded({ extended: true }));
-
-// ----------------------------------------------------
-// SQLITE
-// ----------------------------------------------------
-
-const db = new sqlite3.Database(
-  process.env.DATABASE_PATH || "./payments.db"
-);
+const db = new sqlite3.Database("./payments.db");
 
 db.serialize(() => {
+
   db.run(`
     CREATE TABLE IF NOT EXISTS payments (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      phone TEXT NOT NULL,
-      service TEXT NOT NULL,
-      amount INTEGER NOT NULL,
-      currency TEXT NOT NULL,
-      country TEXT NOT NULL,
-      operator TEXT NOT NULL,
+      phone TEXT,
+      service TEXT,
+      amount INTEGER,
+      currency TEXT,
+      country TEXT,
+      operator TEXT,
       reference TEXT,
       status TEXT,
       message TEXT,
       payment_url TEXT,
-      callback_info TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  /*
+   * Compatibilité avec l'ancienne base.
+   */
+  db.run(
+    `ALTER TABLE payments ADD COLUMN reference TEXT`,
+    () => {}
+  );
+
+  db.run(
+    `ALTER TABLE payments ADD COLUMN message TEXT`,
+    () => {}
+  );
+
+  db.run(
+    `ALTER TABLE payments ADD COLUMN payment_url TEXT`,
+    () => {}
+  );
 });
 
-// ----------------------------------------------------
-// OUTILS
-// ----------------------------------------------------
+/* =========================================================
+   NORMALISATION PAYS
+========================================================= */
 
 function normalizeCountry(country) {
-  if (!country) return null;
 
-  const value = String(country).trim().toUpperCase();
+  if (!country) {
+    return null;
+  }
+
+  const value =
+    String(country)
+      .trim()
+      .toUpperCase();
 
   const aliases = {
+
     BJ: "BEN",
     BENIN: "BEN",
     BEN: "BEN",
 
-    TG: "TGO",
-    TOGO: "TGO",
-    TGO: "TGO",
-
     CI: "CIV",
-    CIV: "CIV",
-    COTE_IVOIRE: "CIV",
+    COTEIVOIRE: "CIV",
     COTE_DIVOIRE: "CIV",
-    CÔTE_D_IVOIRE: "CIV",
-
-    CG: "CG",
-    CONGO: "CG",
-    CONGO_BRAZZAVILLE: "CG",
-
-    SN: "SEN",
-    SENEGAL: "SEN",
-    SÉNÉGAL: "SEN",
+    CIV: "CIV",
 
     BF: "BF",
     BURKINA: "BF",
-    BURKINA_FASO: "BF",
+    BURKINAFASO: "BF",
+
+    CG: "COG",
+    CONGO: "COG",
+    CONGOBRAZZAVILLE: "COG",
+    COG: "COG",
+
+    SN: "SEN",
+    SENEGAL: "SEN",
+    SEN: "SEN",
+
+    TG: "TGO",
+    TOGO: "TGO",
+    TGO: "TGO",
 
     ML: "MLI",
     MALI: "MLI",
     MLI: "MLI"
   };
 
-  return aliases[value] || null;
+  return aliases[value] || value;
 }
 
+/* =========================================================
+   NORMALISATION OPERATEUR
+========================================================= */
+
 function normalizeOperator(operator) {
-  if (!operator) return null;
+
+  if (!operator) {
+    return null;
+  }
 
   return String(operator)
     .trim()
@@ -339,268 +362,179 @@ function normalizeOperator(operator) {
     .replace(/\s+/g, "_");
 }
 
-function cleanDigits(value) {
-  return String(value || "").replace(/\D/g, "");
+/* =========================================================
+   NETTOYAGE TELEPHONE
+========================================================= */
+
+function cleanPhone(phone, countryCode) {
+
+  if (!phone) {
+    return "";
+  }
+
+  let value =
+    String(phone)
+      .replace(/\D/g, "");
+
+  const country =
+    NETWORKS[countryCode];
+
+  if (!country) {
+    return value;
+  }
+
+  const prefix =
+    country.prefix;
+
+  /*
+   * Le numéro contient déjà l'indicatif.
+   */
+  if (value.startsWith(prefix)) {
+    return value;
+  }
+
+  /*
+   * L'utilisateur a mis +221...
+   * Les caractères + et espaces ont déjà été supprimés.
+   */
+
+  return prefix + value;
 }
 
-/**
- * Normalisation des numéros.
- *
- * IMPORTANT :
- * - Bénin : on conserve le 01.
- * - Sénégal : 9 chiffres nationaux.
- * - Burkina : 8 chiffres nationaux.
- * - Togo : 8 chiffres nationaux.
- * - Mali : 8 chiffres nationaux.
- * - Côte d'Ivoire : 10 chiffres nationaux.
- * - Congo : selon la documentation fournie, 12 chiffres nationaux.
- */
-function normalizePhone(phone, countryCode) {
-  const config = NETWORKS[countryCode];
+/* =========================================================
+   VALIDATION TELEPHONE
+========================================================= */
 
-  if (!config) {
-    throw new Error("Pays non pris en charge.");
+function validatePhone(phone, countryCode) {
+
+  const country =
+    NETWORKS[countryCode];
+
+  if (!country) {
+    return false;
   }
 
-  let digits = cleanDigits(phone);
+  /*
+   * Indicatif + numéro national.
+   *
+   * On reste volontairement souple car les longueurs
+   * peuvent varier selon les opérateurs.
+   */
 
-  if (!digits) {
-    throw new Error("Numéro de téléphone obligatoire.");
+  const prefix =
+    country.prefix;
+
+  if (!phone.startsWith(prefix)) {
+    return false;
   }
 
-  // Numéro déjà international
-  if (digits.startsWith(config.prefix)) {
-    const national = digits.slice(config.prefix.length);
+  const national =
+    phone.substring(prefix.length);
 
-    if (national.length !== config.nationalLength) {
-      throw new Error(
-        `Le numéro ${config.country} doit contenir ${config.nationalLength} chiffres après le préfixe ${config.prefix}.`
-      );
-    }
-
-    return digits;
+  if (!/^\d+$/.test(national)) {
+    return false;
   }
 
-  // Numéro local
-  //
-  // On NE retire PAS automatiquement le 0.
-  // C'est indispensable pour le Bénin :
-  // 01xxxxxxxx -> 22901xxxxxxxx
-
-  if (digits.length !== config.nationalLength) {
-    throw new Error(
-      `Le numéro ${config.country} doit contenir ${config.nationalLength} chiffres.`
-    );
-  }
-
-  // Règle Bénin confirmée par la documentation fournie
-  if (countryCode === "BEN" && !digits.startsWith("01")) {
-    throw new Error(
-      "Au Bénin, le numéro doit être au format 01XXXXXXXX."
-    );
-  }
-
-  return config.prefix + digits;
+  return (
+    national.length >= 8 &&
+    national.length <= 10
+  );
 }
+
+/* =========================================================
+   DEVISE
+========================================================= */
 
 function getRate(currency) {
-  return currency === "XAF" ? USD_TO_XAF : USD_TO_XOF;
-}
 
-function calculateAmount(service, currency) {
-  const serviceConfig = SERVICES[service];
-
-  if (!serviceConfig) {
-    throw new Error("Service invalide.");
+  if (currency === "XAF") {
+    return USD_TO_XAF;
   }
 
-  const rate = getRate(currency);
-
-  return Math.round(serviceConfig.usd * rate);
+  return USD_TO_XOF;
 }
 
-function sanitizeDescription(text) {
-  return String(text || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-zA-Z0-9 _-]/g, "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 100);
-}
+/* =========================================================
+   DESCRIPTION
+========================================================= */
 
-function generateCallbackInfo() {
-  return `order_${Date.now()}_${Math.random()
-    .toString(36)
-    .substring(2, 8)}`;
-}
+function getDescription(service) {
 
-function isFinalStatus(status) {
-  const value = String(status || "").toUpperCase();
-
-  return [
-    "SUCCESS",
-    "SUCCESSFUL",
-    "FAILED",
-    "FAILURE",
-    "CANCELLED",
-    "CANCELED",
-    "REJECTED",
-    "ERROR"
-  ].includes(value);
-}
-
-function isSuccessStatus(status) {
-  const value = String(status || "").toUpperCase();
-
-  return [
-    "SUCCESS",
-    "SUCCESSFUL",
-    "ACCEPTED"
-  ].includes(value);
-}
-
-function extractFeexPayError(data) {
-  if (!data) return "Erreur FeexPay inconnue.";
-
-  if (typeof data === "string") {
-    return data.slice(0, 500);
+  if (
+    SERVICES[service] &&
+    SERVICES[service].description
+  ) {
+    return SERVICES[service].description;
   }
 
-  if (data.message) {
-    return String(data.message);
-  }
-
-  if (data.responsemsg) {
-    return String(data.responsemsg);
-  }
-
-  if (data.error) {
-    return typeof data.error === "string"
-      ? data.error
-      : JSON.stringify(data.error);
-  }
-
-  if (data.response_operator) {
-    try {
-      return JSON.stringify(data.response_operator);
-    } catch {
-      return "Erreur retournée par l'opérateur.";
-    }
-  }
-
-  return "La demande FeexPay n'a pas pu être traitée.";
+  return "Paiement";
 }
 
-// ----------------------------------------------------
-// FEEXPAY REQUEST
-// ----------------------------------------------------
-
-async function requestFeexPay(endpoint, payload) {
-  const url = FEEXPAY_BASE + endpoint;
-
-  const response = await fetch(url, {
-    method: "POST",
-
-    headers: {
-      Authorization: `Bearer ${FEEXPAY_API_KEY}`,
-      "Content-Type": "application/json",
-      Accept: "application/json"
-    },
-
-    body: JSON.stringify(payload)
-  });
-
-  const text = await response.text();
-
-  let data;
-
-  try {
-    data = JSON.parse(text);
-  } catch {
-    data = {
-      raw: text
-    };
-  }
-
-  return {
-    httpStatus: response.status,
-    ok: response.ok,
-    data
-  };
-}
-
-// ----------------------------------------------------
-// HEALTH
-// ----------------------------------------------------
+/* =========================================================
+   API HEALTH
+========================================================= */
 
 app.get("/api/health", (req, res) => {
+
   res.json({
-    success: true,
-    service: "FeexPay Payin",
-    configured: Boolean(
-      FEEXPAY_API_KEY && FEEXPAY_SHOP_ID
-    )
+    status: "online",
+    service: "payment-api",
+    feexpay:
+      Boolean(
+        FEEXPAY_API_KEY &&
+        FEEXPAY_SHOP_ID
+      )
   });
 });
 
-// ----------------------------------------------------
-// SERVICES
-// ----------------------------------------------------
-
-app.get("/api/services", (req, res) => {
-  res.json({
-    success: true,
-    services: Object.entries(SERVICES).map(
-      ([id, service]) => ({
-        id,
-        name: service.name,
-        usd: service.usd
-      })
-    )
-  });
-});
-
-// ----------------------------------------------------
-// NETWORKS
-// ----------------------------------------------------
+/* =========================================================
+   INFORMATIONS PAYS
+========================================================= */
 
 app.get("/api/networks", (req, res) => {
+
   const result = {};
 
-  for (const [countryCode, country] of Object.entries(NETWORKS)) {
-    result[countryCode] = {
-      country: country.country,
-      currency: country.currency,
-      prefix: country.prefix,
+  Object.keys(NETWORKS).forEach(
+    countryCode => {
 
-      operators: Object.entries(country.operators).map(
-        ([id, operator]) => ({
-          id,
-          name: operator.name,
-          requiresOtp: operator.requiresOtp,
-          paymentUrl: operator.paymentUrl
-        })
-      )
-    };
-  }
+      const country =
+        NETWORKS[countryCode];
 
-  res.json({
-    success: true,
-    networks: result
-  });
+      result[countryCode] = {
+        name: country.name,
+        prefix: country.prefix,
+        currency: country.currency,
+        networks:
+          Object.keys(country.networks)
+            .map(key => ({
+              value: key,
+              label:
+                country.networks[key].label
+            }))
+      };
+    }
+  );
+
+  res.json(result);
 });
 
-// ----------------------------------------------------
-// PAIEMENT
-// ----------------------------------------------------
+/* =========================================================
+   DEMANDE DE PAIEMENT
+========================================================= */
 
 app.post("/api/pay", async (req, res) => {
+
   try {
-    if (!FEEXPAY_API_KEY || !FEEXPAY_SHOP_ID) {
+
+    if (
+      !FEEXPAY_API_KEY ||
+      !FEEXPAY_SHOP_ID
+    ) {
+
       return res.status(500).json({
         success: false,
-        message:
+        error:
           "Configuration FeexPay manquante sur le serveur."
       });
     }
@@ -609,186 +543,239 @@ app.post("/api/pay", async (req, res) => {
       phone,
       service,
       country,
-      operator,
-      otp
+      operator
     } = req.body;
 
-    const countryCode = normalizeCountry(country);
-    const operatorCode = normalizeOperator(operator);
+    const normalizedCountry =
+      normalizeCountry(country);
 
-    if (!countryCode) {
-      return res.status(400).json({
-        success: false,
-        message: "Pays invalide."
-      });
-    }
+    const normalizedOperator =
+      normalizeOperator(operator);
 
-    const countryConfig = NETWORKS[countryCode];
+    /* ---------------------------------------------
+       Vérification pays
+    --------------------------------------------- */
+
+    const countryConfig =
+      NETWORKS[normalizedCountry];
 
     if (!countryConfig) {
+
       return res.status(400).json({
         success: false,
-        message: "Pays non pris en charge."
+        error:
+          "Pays non pris en charge."
       });
     }
 
-    const operatorConfig =
-      countryConfig.operators[operatorCode];
+    /* ---------------------------------------------
+       Vérification réseau
+    --------------------------------------------- */
 
-    if (!operatorConfig) {
+    const networkConfig =
+      countryConfig.networks[
+        normalizedOperator
+      ];
+
+    if (!networkConfig) {
+
       return res.status(400).json({
         success: false,
-        message: "Réseau de paiement invalide pour ce pays."
+        error:
+          "Réseau non pris en charge pour ce pays."
       });
     }
+
+    /* ---------------------------------------------
+       Vérification service
+    --------------------------------------------- */
 
     if (!SERVICES[service]) {
+
       return res.status(400).json({
         success: false,
-        message: "Service invalide."
+        error:
+          "Service de paiement invalide."
       });
     }
 
-    // Normalisation numéro
-    let cleanedPhone;
+    /* ---------------------------------------------
+       Téléphone
+    --------------------------------------------- */
 
-    try {
-      cleanedPhone = normalizePhone(
+    const cleanedPhone =
+      cleanPhone(
         phone,
-        countryCode
+        normalizedCountry
       );
-    } catch (error) {
-      return res.status(400).json({
-        success: false,
-        message: error.message
-      });
-    }
-
-    // Montant calculé côté serveur
-    const amount = calculateAmount(
-      service,
-      countryConfig.currency
-    );
 
     if (
-      amount < MIN_AMOUNT ||
-      amount > MAX_AMOUNT
+      !validatePhone(
+        cleanedPhone,
+        normalizedCountry
+      )
     ) {
+
       return res.status(400).json({
         success: false,
-        message:
-          `Montant hors limites FeexPay (${MIN_AMOUNT} - ${MAX_AMOUNT}).`
+        error:
+          `Numéro de téléphone invalide pour ${countryConfig.name}.`
       });
     }
 
-    // OTP Orange BF
-    if (operatorConfig.requiresOtp) {
-      const cleanOtp = String(otp || "")
-        .replace(/\D/g, "");
+    /* ---------------------------------------------
+       Montant
+    --------------------------------------------- */
 
-      if (!/^\d{4,8}$/.test(cleanOtp)) {
-        return res.status(400).json({
-          success: false,
-          message:
-            "Veuillez saisir le code OTP Orange Burkina reçu après la procédure USSD."
-        });
-      }
+    const usd =
+      SERVICES[service].usd;
+
+    const currency =
+      countryConfig.currency;
+
+    const rate =
+      getRate(currency);
+
+    const amount =
+      Math.round(
+        usd * rate
+      );
+
+    if (
+      amount < 100 ||
+      amount > 2000000
+    ) {
+
+      return res.status(400).json({
+        success: false,
+        error:
+          "Le montant doit être compris entre 100 et 2 000 000."
+      });
     }
 
-    const callbackInfo = generateCallbackInfo();
+    const description =
+      getDescription(service);
 
-    const description = sanitizeDescription(
-      `Paiement ${SERVICES[service].name}`
-    );
-
-    // Payload de base
-    const payload = {
-      shop: FEEXPAY_SHOP_ID,
-      amount,
-      phoneNumber: cleanedPhone,
-      callback_info: callbackInfo
-    };
-
-    // Description seulement si le réseau la documente
-    const descriptionSupported = [
-      "mtn",
-      "moov",
-      "celtiis_bj",
-      "mtn_ci",
-      "moov_ci",
-      "wave_ci",
-      "orange_ci",
-      "orange_sn",
-      "wave_sn",
-      "free_sn",
-      "mtn_cg"
-    ].some(
-      key => operatorCode === key
-    );
-
-    if (descriptionSupported) {
-      payload.description = description;
-    }
-
-    // Champs return_url pour les opérateurs avec redirection
-    if (operatorConfig.paymentUrl) {
-      payload.return_url =
-        `${PUBLIC_URL}/?payment_return=1`;
-    }
-
-    // Wave CI accepte également cancel_url
-    if (operatorCode === "wave_ci") {
-      payload.cancel_url =
-        `${PUBLIC_URL}/?payment_cancelled=1`;
-    }
-
-    // OTP Orange BF
-    if (operatorConfig.requiresOtp) {
-      payload.otp = String(otp).replace(/\D/g, "");
-    }
-
+    console.log("");
     console.log(
-      `[PAYIN] ${countryCode}/${operatorCode}`,
-      {
-        phone: cleanedPhone,
-        amount,
-        currency: countryConfig.currency,
-        service,
-        callbackInfo
-      }
+      "========== NOUVELLE DEMANDE =========="
+    );
+    console.log(
+      "Téléphone :",
+      cleanedPhone
+    );
+    console.log(
+      "Pays :",
+      normalizedCountry
+    );
+    console.log(
+      "Réseau :",
+      normalizedOperator
+    );
+    console.log(
+      "Service :",
+      service
+    );
+    console.log(
+      "Prix USD :",
+      usd
+    );
+    console.log(
+      "Taux :",
+      rate
+    );
+    console.log(
+      "Montant :",
+      amount,
+      currency
+    );
+    console.log(
+      "URL :",
+      networkConfig.endpoint
+    );
+    console.log(
+      "======================================"
     );
 
-    const result = await requestFeexPay(
-      operatorConfig.endpoint,
-      payload
+    /* ---------------------------------------------
+       APPEL FEEXPAY
+    --------------------------------------------- */
+
+    const paymentRes =
+      await fetch(
+        networkConfig.endpoint,
+        {
+          method: "POST",
+
+          headers: {
+            "Authorization":
+              `Bearer ${FEEXPAY_API_KEY}`,
+
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+
+            shop:
+              FEEXPAY_SHOP_ID,
+
+            amount:
+              amount,
+
+            phoneNumber:
+              cleanedPhone,
+
+            description:
+              description
+          })
+        }
+      );
+
+    const responseText =
+      await paymentRes.text();
+
+    let data;
+
+    try {
+
+      data =
+        JSON.parse(
+          responseText
+        );
+
+    } catch {
+
+      data = {
+        message:
+          responseText
+      };
+    }
+
+    console.log("");
+    console.log(
+      "========== REPONSE FEEXPAY =========="
+    );
+    console.log(data);
+    console.log(
+      "HTTP :",
+      paymentRes.status
+    );
+    console.log(
+      "====================================="
     );
 
-    const data = result.data || {};
+    /* ---------------------------------------------
+       ERREUR FEEXPAY
+    --------------------------------------------- */
 
-    const reference =
-      data.reference ||
-      data.transref ||
-      data.order_id ||
-      null;
+    if (!paymentRes.ok) {
 
-    const status =
-      String(data.status || "PENDING").toUpperCase();
-
-    const message =
-      data.message ||
-      data.responsemsg ||
-      data.description ||
-      "";
-
-    const paymentUrl =
-      data.payment_url ||
-      data.paymentUrl ||
-      null;
-
-    // Si HTTP FeexPay est en erreur
-    if (!result.ok) {
       const errorMessage =
-        extractFeexPayError(data);
+        data.message ||
+        data.error ||
+        data.reason ||
+        "FeexPay a refusé la demande de paiement.";
 
       db.run(
         `
@@ -803,38 +790,68 @@ app.post("/api/pay", async (req, res) => {
           reference,
           status,
           message,
-          payment_url,
-          callback_info
+          payment_url
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `,
         [
           cleanedPhone,
           service,
           amount,
-          countryConfig.currency,
-          countryCode,
-          operatorCode,
-          reference,
-          "FAILED",
+          currency,
+          normalizedCountry,
+          normalizedOperator,
+          data.reference || null,
+          data.status || "FAILED",
           errorMessage,
-          paymentUrl,
-          callbackInfo
+          data.payment_url || null
         ]
       );
 
-      return res.status(result.httpStatus || 400).json({
+      return res.status(
+        paymentRes.status
+      ).json({
+
         success: false,
-        status: "FAILED",
-        message: errorMessage,
-        reference,
-        amount,
-        currency: countryConfig.currency,
-        payment_url: paymentUrl
+
+        error:
+          errorMessage,
+
+        status:
+          data.status || "FAILED",
+
+        reference:
+          data.reference || null,
+
+        payment_url:
+          data.payment_url || null
       });
     }
 
-    // Enregistrement
+    /* ---------------------------------------------
+       ACCEPTATION
+    --------------------------------------------- */
+
+    const status =
+      data.status ||
+      "PENDING";
+
+    const reference =
+      data.reference ||
+      null;
+
+    const message =
+      data.message ||
+      "Transaction initiée.";
+
+    const paymentUrl =
+      data.payment_url ||
+      null;
+
+    /* ---------------------------------------------
+       ENREGISTREMENT
+    --------------------------------------------- */
+
     db.run(
       `
       INSERT INTO payments
@@ -848,138 +865,196 @@ app.post("/api/pay", async (req, res) => {
         reference,
         status,
         message,
-        payment_url,
-        callback_info
+        payment_url
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       [
         cleanedPhone,
         service,
         amount,
-        countryConfig.currency,
-        countryCode,
-        operatorCode,
+        currency,
+        normalizedCountry,
+        normalizedOperator,
         reference,
         status,
         message,
-        paymentUrl,
-        callbackInfo
-      ]
+        paymentUrl
+      ],
+      err => {
+
+        if (err) {
+          console.error(
+            "Erreur SQLite :",
+            err.message
+          );
+        }
+      }
     );
 
+    /* ---------------------------------------------
+       REPONSE AU NAVIGATEUR
+    --------------------------------------------- */
+
     return res.json({
+
       success: true,
-      status,
-      reference,
-      message,
-      amount,
-      currency: countryConfig.currency,
-      country: countryCode,
-      operator: operatorCode,
-      payment_url: paymentUrl,
-      callback_info: callbackInfo,
 
-      // Permet au frontend de savoir s'il doit encore vérifier
-      final: isFinalStatus(status),
+      status:
+        status,
 
-      // Information pratique
-      payment_required:
-        Boolean(paymentUrl) &&
-        !isSuccessStatus(status)
+      reference:
+        reference,
+
+      message:
+        message,
+
+      amount:
+        amount,
+
+      currency:
+        currency,
+
+      country:
+        normalizedCountry,
+
+      operator:
+        normalizedOperator,
+
+      payment_url:
+        paymentUrl
     });
 
   } catch (error) {
-    console.error("PAYMENT ERROR:", error);
+
+    console.error(
+      "ERREUR /api/pay :",
+      error
+    );
 
     return res.status(500).json({
+
       success: false,
-      status: "FAILED",
-      message:
-        error.message ||
-        "Erreur interne lors du paiement."
+
+      error:
+        "Erreur interne lors du traitement du paiement."
     });
   }
 });
 
-// ----------------------------------------------------
-// STATUT FEEXPAY
-// ----------------------------------------------------
+/* =========================================================
+   VERIFICATION DU STATUT
+========================================================= */
 
 app.get(
   "/api/payment-status/:reference",
   async (req, res) => {
+
     try {
-      if (!FEEXPAY_API_KEY) {
-        return res.status(500).json({
-          success: false,
-          message:
-            "Clé API FeexPay absente."
-        });
-      }
 
       const reference =
-        String(req.params.reference || "").trim();
+        String(
+          req.params.reference || ""
+        ).trim();
 
       if (!reference) {
+
         return res.status(400).json({
           success: false,
-          message: "Référence manquante."
+          error:
+            "Référence manquante."
         });
       }
 
       const url =
-        `${FEEXPAY_STATUS_BASE}/${encodeURIComponent(reference)}`;
+        `${STATUS_BASE}/${encodeURIComponent(reference)}`;
 
-      const response = await fetch(url, {
-        method: "GET",
+      console.log(
+        "Vérification statut :",
+        reference
+      );
 
-        headers: {
-          Authorization:
-            `Bearer ${FEEXPAY_API_KEY}`,
-          Accept: "application/json"
-        }
-      });
+      const statusRes =
+        await fetch(
+          url,
+          {
+            method: "GET",
 
-      const text = await response.text();
+            headers: {
+              "Authorization":
+                `Bearer ${FEEXPAY_API_KEY}`,
+
+              "Content-Type":
+                "application/json"
+            }
+          }
+        );
+
+      const responseText =
+        await statusRes.text();
 
       let data;
 
       try {
-        data = JSON.parse(text);
+
+        data =
+          JSON.parse(
+            responseText
+          );
+
       } catch {
+
         data = {
-          raw: text
+          message:
+            responseText
         };
       }
 
-      if (!response.ok) {
-        return res.status(response.status).json({
+      console.log(
+        "Statut FeexPay :",
+        data
+      );
+
+      if (!statusRes.ok) {
+
+        return res.status(
+          statusRes.status
+        ).json({
+
           success: false,
-          status: "FAILED",
-          message:
-            extractFeexPayError(data),
-          reference
+
+          error:
+            data.message ||
+            data.error ||
+            "Impossible de vérifier le statut.",
+
+          status:
+            data.status ||
+            "UNKNOWN",
+
+          reference:
+            reference
         });
       }
 
       const status =
-        String(
-          data.status ||
-          data.transaction_status ||
-          "PENDING"
-        ).toUpperCase();
+        data.status ||
+        "PENDING";
 
       const message =
         data.message ||
-        data.responsemsg ||
-        data.description ||
+        data.reason ||
         "";
+
+      /* ---------------------------------------------
+         Mise à jour SQLite
+      --------------------------------------------- */
 
       db.run(
         `
         UPDATE payments
-        SET status = ?, message = ?
+        SET status = ?,
+            message = ?
         WHERE reference = ?
         `,
         [
@@ -990,108 +1065,95 @@ app.get(
       );
 
       return res.json({
+
         success: true,
-        reference,
-        status,
-        message,
-        final: isFinalStatus(status),
-        successful: isSuccessStatus(status),
-        data
+
+        reference:
+          reference,
+
+        status:
+          status,
+
+        message:
+          message,
+
+        data:
+          data
       });
 
     } catch (error) {
+
       console.error(
-        "STATUS ERROR:",
+        "ERREUR STATUT :",
         error
       );
 
       return res.status(500).json({
+
         success: false,
-        status: "ERROR",
-        message:
-          "Impossible de vérifier le statut."
+
+        error:
+          "Erreur lors de la vérification du statut."
       });
     }
   }
 );
 
-// ----------------------------------------------------
-// HISTORIQUE LOCAL D'UNE TRANSACTION
-// ----------------------------------------------------
+/* =========================================================
+   SERVIR LE SITE
+========================================================= */
+
+app.use(
+  express.static(__dirname)
+);
 
 app.get(
-  "/api/payment/:reference",
+  "*",
   (req, res) => {
-    const reference =
-      String(req.params.reference || "").trim();
 
-    db.get(
-      `
-      SELECT *
-      FROM payments
-      WHERE reference = ?
-      ORDER BY id DESC
-      LIMIT 1
-      `,
-      [reference],
-      (error, row) => {
-        if (error) {
-          return res.status(500).json({
-            success: false,
-            message: "Erreur base de données."
-          });
-        }
-
-        if (!row) {
-          return res.status(404).json({
-            success: false,
-            message: "Transaction introuvable."
-          });
-        }
-
-        res.json({
-          success: true,
-          payment: row
-        });
-      }
+    res.sendFile(
+      path.join(
+        __dirname,
+        "index.html"
+      )
     );
   }
 );
 
-// ----------------------------------------------------
-// SITE WEB
-// ----------------------------------------------------
+/* =========================================================
+   DEMARRAGE
+========================================================= */
 
-app.use(
-  express.static(
-    path.join(__dirname, "public")
-  )
+app.listen(
+  PORT,
+  () => {
+
+    console.log("");
+    console.log(
+      "======================================"
+    );
+
+    console.log(
+      "SERVEUR DE PAIEMENT DEMARRE"
+    );
+
+    console.log(
+      "PORT :",
+      PORT
+    );
+
+    console.log(
+      "Taux XOF :",
+      USD_TO_XOF
+    );
+
+    console.log(
+      "Taux XAF :",
+      USD_TO_XAF
+    );
+
+    console.log(
+      "======================================"
+    );
+  }
 );
-
-app.get("*", (req, res) => {
-  res.sendFile(
-    path.join(
-      __dirname,
-      "public",
-      "index.html"
-    )
-  );
-});
-
-// ----------------------------------------------------
-// START
-// ----------------------------------------------------
-
-app.listen(PORT, () => {
-  console.log(
-    `Serveur démarré sur le port ${PORT}`
-  );
-
-  console.log(
-    "FeexPay API configurée :",
-    Boolean(
-      FEEXPAY_API_KEY &&
-      FEEXPAY_SHOP_ID
-    )
-  );
-});
