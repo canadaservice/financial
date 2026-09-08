@@ -3,17 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Service de paiement</title>
 
 <!-- FeexPay JavaScript SDK V2 -->
 <script src="https://feexpay.me"></script>
 
 <style>
-* {
-  box-sizing: border-box;
-}
-
+* { box-sizing: border-box; }
 body {
   font-family: Arial, sans-serif;
   background: linear-gradient(rgba(0,0,0,0.60), rgba(0,0,0,0.60)), url("background.jpg") no-repeat center center;
@@ -25,7 +21,6 @@ body {
   margin: 0;
   padding: 20px;
 }
-
 .box {
   background: white;
   padding: 25px;
@@ -35,133 +30,40 @@ body {
   text-align: center;
   box-shadow: 0 8px 30px rgba(0,0,0,0.25);
 }
-
-.logo {
-  width: 100px;
-  max-width: 100%;
-  margin-bottom: 10px;
+.logo { width: 100px; max-width: 100%; margin-bottom: 10px; }
+.title { font-weight: bold; font-size: 20px; margin-bottom: 18px; }
+.subtitle { font-size: 13px; color: #666; margin-bottom: 15px; }
+input, select {
+  width: 100%; padding: 12px; margin-top: 10px; border-radius: 6px;
+  border: 1px solid #ccc; font-size: 15px; background: white;
 }
-
-.title {
-  font-weight: bold;
-  font-size: 20px;
-  margin-bottom: 18px;
-}
-
-.subtitle {
-  font-size: 13px;
-  color: #666;
-  margin-bottom: 15px;
-}
-
-input,
-select {
-  width: 100%;
-  padding: 12px;
-  margin-top: 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 15px;
-  background: white;
-}
-
-input:focus,
-select:focus {
-  outline: none;
-  border-color: #00bcd4;
-}
-
-.row {
-  display: flex;
-  gap: 6px;
-}
-
-.prefix {
-  width: 32%;
-  background: #eee;
-  text-align: center;
-}
-
-.phone {
-  width: 68%;
-}
-
+input:focus, select:focus { outline: none; border-color: #00bcd4; }
+.row { display: flex; gap: 6px; }
+.prefix { width: 32%; background: #eee; text-align: center; }
+.phone { width: 68%; }
 .amount-box {
-  margin-top: 15px;
-  padding: 12px;
-  border-radius: 6px;
-  background: #f4f4f4;
-  font-weight: bold;
-  font-size: 16px;
+  margin-top: 15px; padding: 12px; border-radius: 6px;
+  background: #f4f4f4; font-weight: bold; font-size: 16px;
 }
-
 button {
-  width: 100%;
-  padding: 14px;
-  margin-top: 15px;
-  background: #00bcd4;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-weight: bold;
-  font-size: 16px;
-  cursor: pointer;
+  width: 100%; padding: 14px; margin-top: 15px; background: #00bcd4;
+  color: white; border: none; border-radius: 6px; font-weight: bold;
+  font-size: 16px; cursor: pointer;
 }
-
-button:hover {
-  opacity: 0.9;
-}
-
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-#result {
-  margin-top: 15px;
-  font-weight: bold;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.notice {
-  margin-top: 12px;
-  font-size: 11px;
-  color: #777;
-  line-height: 1.4;
-}
-
-.footer {
-  position: fixed;
-  bottom: 8px;
-  width: 100%;
-  text-align: center;
-  color: white;
-  font-size: 11px;
-  padding: 0 10px;
-}
-
-/* Conteneur FeexPay obligatoire */
-#render {
-  display: block; /* Laissé en visible pour éviter les blocages d'initialisation */
-  margin-top: 10px;
-}
+button:hover { opacity: 0.9; }
+button:disabled { opacity: 0.6; cursor: not-allowed; }
+#result { margin-top: 15px; font-weight: bold; font-size: 14px; line-height: 1.5; }
+.notice { margin-top: 12px; font-size: 11px; color: #777; line-height: 1.4; }
+.footer { position: fixed; bottom: 8px; width: 100%; text-align: center; color: white; font-size: 11px; padding: 0 10px; }
+#render { display: none; }
 </style>
 </head>
-
 <body>
 
 <div class="box">
-
   <img src="logo.png" class="logo" alt="Logo">
-
-  <div class="title">
-    Service de paiement
-  </div>
-
-  <div class="subtitle">
-    Sélectionnez le service et votre moyen de paiement.
-  </div>
+  <div class="title">Service de paiement</div>
+  <div class="subtitle">Sélectionnez le service et votre moyen de paiement.</div>
 
   <!-- SERVICE -->
   <select id="service" onchange="updateAmount()">
@@ -180,13 +82,10 @@ button:disabled {
     <option value="ML">Mali</option>
     <option value="BF">Burkina Faso</option>
     <option value="CG">Congo-Brazzaville</option>
-    <option value="CM" disabled>Cameroun - paiement indisponible</option>
-    <option value="CD" disabled>RDC - paiement indisponible</option>
-    <option value="GA" disabled>Gabon - paiement indisponible</option>
   </select>
 
   <!-- OPERATEUR -->
-  <select id="operator" onchange="updatePaymentAvailability()"></select>
+  <select id="operator"></select>
 
   <!-- TELEPHONE -->
   <div class="row">
@@ -204,35 +103,19 @@ button:disabled {
   <p id="result"></p>
 
   <div class="notice">
-    Le paiement est traité par FeexPay.
-    Vérifiez attentivement les informations avant de confirmer.
+    Le paiement est traité par FeexPay. Vérifiez attentivement les informations avant de confirmer.
   </div>
 
-  <!-- Conteneur obligatoire FeexPay -->
   <div id="render"></div>
-
 </div>
 
-<div class="footer">
-  © 2026 — Service de paiement sécurisé
-</div>
+<div class="footer">© 2026 — Service de paiement sécurisé</div>
 
 <script>
-
-/* =========================================================
-   CONFIGURATION FEEXPAY
-========================================================= */
-
-// ⚠️ REMPLACEZ CES DEUX VALEURS PAR VOS CODES DE PRODUCTION SI VOUS PASSEZ EN LIVE
 const FEEXPAY_SHOP_ID = "IYDzyrokhFsbjR6";
 const FEEXPAY_API_KEY = "fp_kduKiG5WH1aUurqtDWszbXNpjZgzOvKEd9263XCme8gfyIdOu5zJRV93N4IgLWbc";
-
-// Mettre "SANDBOX" pour vos tests et "LIVE" pour la production réelle
 const FEEXPAY_MODE = "LIVE";
 
-/* =========================================================
-   TARIFS
-========================================================= */
 const services = {
   biometrie: { name: "Données biométriques", usd: 5 },
   langue: { name: "Test de langue", usd: 150 },
@@ -240,30 +123,21 @@ const services = {
   total: { name: "Tout payer", usd: 455 }
 };
 
-/* =========================================================
-   TAUX & DEVISE
-========================================================= */
 const rates = { XOF: 550 };
 const DEFAULT_CURRENCY = "XOF";
 
-/* =========================================================
-   BASE DE DONNÉES PAYS
-========================================================= */
+// Configuration des réseaux pour s'aligner sur la nomenclature d'intégration FeexPay V2
 const countries = {
-  BJ: { name: "Benin", displayName: "Bénin", prefix: "229", currency: "XOF", networks: ["MTN", "MOOV", "CELTIIS", "CORIS"] },
-  TG: { name: "Togo", displayName: "Togo", prefix: "228", currency: "XOF", networks: ["MOOV", "TOGOCOM"] },
-  CI: { name: "Côte d'Ivoire", displayName: "Côte d'Ivoire", prefix: "225", currency: "XOF", networks: ["MTN", "ORANGE", "MOOV", "WAVE"] },
-  SN: { name: "Senegal", displayName: "Sénégal", prefix: "221", currency: "XOF", networks: ["ORANGE", "WAVE", "FREE"] },
-  ML: { name: "Mali", displayName: "Mali", prefix: "223", currency: "XOF", networks: ["ORANGE", "MOBICASH"] },
-  BF: { name: "Burkina Faso", displayName: "Burkina Faso", prefix: "226", currency: "XOF", networks: ["ORANGE", "MOOV", "WAVE"] },
-  CG: { name: "Congo-Brazzaville", displayName: "Congo-Brazzaville", prefix: "242", currency: "XAF", networks: ["MTN"] }
+  BJ: { prefix: "229", networks: [{ value: "mtn_benin", label: "MTN BENIN" }, { value: "moov_benin", label: "MOOV BENIN" }, { value: "celtiis_benin", label: "CELTIIS BENIN" }] },
+  TG: { prefix: "228", networks: [{ value: "moov_togo", label: "MOOV TOGO" }, { value: "togocom_togo", label: "TOGOCOM" }] },
+  CI: { prefix: "225", networks: [{ value: "mtn_ci", label: "MTN CI" }, { value: "orange_ci", label: "ORANGE CI" }, { value: "moov_ci", label: "MOOV CI" }, { value: "wave_ci", label: "WAVE CI" }] },
+  SN: { prefix: "221", networks: [{ value: "orange_sn", label: "ORANGE SENEGAL" }, { value: "wave_sn", label: "WAVE SENEGAL" }] },
+  ML: { prefix: "223", networks: [{ value: "orange_ml", label: "ORANGE MALI" }] },
+  BF: { prefix: "226", networks: [{ value: "orange_bf", label: "ORANGE BF" }] },
+  CG: { prefix: "242", networks: [{ value: "mtn_cg", label: "MTN CONGO" }] }
 };
 
-/* =========================================================
-   VARIABLES ET ÉLÉMENTS D'INTERFACE
-========================================================= */
 let finalAmount = 0;
-let currentReference = null;
 let paymentInProgress = false;
 
 const service = document.getElementById("service");
@@ -275,85 +149,61 @@ const displayAmount = document.getElementById("displayAmount");
 const result = document.getElementById("result");
 const payButton = document.getElementById("payButton");
 
-/* =========================================================
-   FONCTIONS LOGIQUES
-========================================================= */
-
 function updateCountry() {
   const selectedCountry = country.value;
   const data = countries[selectedCountry];
-
+  
   operator.innerHTML = "";
-
-  if (!data) {
-    prefix.value = "";
-    return;
-  }
+  if (!data) return;
 
   prefix.value = "+" + data.prefix;
 
-  data.networks.forEach(network => {
+  data.networks.forEach(net => {
     const opt = document.createElement("option");
-    opt.value = network;
-    opt.textContent = network;
+    opt.value = net.value;
+    opt.textContent = net.label;
     operator.appendChild(opt);
   });
 
   updateAmount();
-  updatePaymentAvailability();
 }
 
 function updateAmount() {
   const selectedService = service.value;
   const serviceData = services[selectedService];
-  
   if (!serviceData) return;
 
-  const amountUSD = serviceData.usd;
-  finalAmount = amountUSD * rates.XOF;
-
+  finalAmount = serviceData.usd * rates.XOF;
   displayAmount.textContent = `Montant à payer : ${finalAmount.toLocaleString('fr-FR')} XOF`;
 }
 
-function updatePaymentAvailability() {
-  payButton.disabled = false;
-  result.textContent = "";
-}
-
-/* =========================================================
-   FONCTION CRITIQUE DE TRAITEMENT DU PAIEMENT
-========================================================= */
 function payer() {
   let phoneNumber = phone.value.trim();
-  
   if (!phoneNumber) {
     result.style.color = "red";
     result.textContent = "Veuillez entrer un numéro de téléphone valide.";
     return;
   }
 
-  // Nettoyage complet des caractères superflus
+  // Nettoyer les espaces et le signe +
   phoneNumber = phoneNumber.replace(/\s+/g, "").replace("+", "");
 
-  // Si l'utilisateur saisit déjà l'indicatif 229 au début, on l'isole pour le traitement
-  if (phoneNumber.startsWith("229")) {
-    phoneNumber = phoneNumber.substring(3);
+  // Si l'utilisateur saisit déjà l'indicatif pays au début, on le retire pour éviter les doublons
+  const currentPrefix = countries[country.value].prefix;
+  if (phoneNumber.startsWith(currentPrefix)) {
+    phoneNumber = phoneNumber.substring(currentPrefix.length);
   }
 
-  // Construction du numéro requis par l'API V2 (Doit donner : 22901xxxxxxxx)
-  const prefixValue = countries[country.value].prefix;
-  const finalPhoneNumber = prefixValue + phoneNumber;
+  // Composition finale : 229 + 0142222197 (Strictement 13 chiffres requis pour le Bénin en V2)
+  const finalPhoneNumber = currentPrefix + phoneNumber;
 
   if (paymentInProgress) return;
   paymentInProgress = true;
   payButton.disabled = true;
   result.style.color = "#333";
-  result.textContent = "Lancement de l'opération...";
-
-  currentReference = "REF-" + Date.now() + "-" + Math.floor(Math.random() * 1000);
+  result.textContent = "Lancement de la transaction...";
 
   try {
-    // Initialisation de l'instance Payin
     const feexpay = new FeexPayPayin({
       shop_id: FEEXPAY_SHOP_ID,
       api_key: FEEXPAY_API_KEY,
@@ -361,19 +211,55 @@ function payer() {
       container: "render"
     });
 
-    // L'API V2 requiert impérativement les opérateurs en lettres minuscules ("mtn")
-    const operatorValue = operator.value.toLowerCase();
-
     const paymentData = {
       amount: finalAmount,
       currency: DEFAULT_CURRENCY,
       country: country.value,
-      operator: operatorValue, 
-      phone_number: finalPhoneNumber, // Chaîne formatée : "2290142222197"
-      reference: currentReference,
+      operator: operator.value, // Transmet directement la valeur exacte (ex: "mtn_benin")
+      phone_number: finalPhoneNumber,
+      reference: "REF-" + Date.now(),
       callback_url: window.location.href,
       description: "Paiement Service - " + services[service.value].name
     };
 
-    console.log("Paramètres envoyés au SDK :", paymentData);
+    console.log("Payload envoyé au SDK :", paymentData);
 
+    feexpay.initPayin(paymentData)
+      .then(response => {
+        paymentInProgress = false;
+        payButton.disabled = false;
+
+        if (response && (response.status === "SUCCESSFUL" || response.status === "SUCCESS")) {
+          result.style.color = "green";
+          result.textContent = "✅ Paiement effectué avec succès !";
+        } else if (response && response.status === "PENDING") {
+          result.style.color = "orange";
+          result.textContent = "⏱️ Demande envoyée ! Veuillez valider la notification USSD / Mobile Money reçue sur votre téléphone.";
+        } else {
+          result.style.color = "red";
+          result.textContent = "❌ Transaction refusée ou annulée.";
+        }
+      })
+      .catch(error => {
+        paymentInProgress = false;
+        payButton.disabled = false;
+        result.style.color = "red";
+        result.textContent = "Erreur : Passerelle indisponible ou données invalides.";
+        console.error("Erreur SDK détaillé :", error);
+      });
+
+  } catch (err) {
+    paymentInProgress = false;
+    payButton.disabled = false;
+    result.style.color = "red";
+    result.textContent = "Erreur critique : " + err.message;
+  }
+}
+
+// Lancement de l'initialisation au chargement de la page
+window.onload = function() {
+  updateCountry();
+};
+</script>
+</body>
+</html>
