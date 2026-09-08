@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Service de paiement</title>
 
+<!-- Importation officielle du SDK FeexPay JavaScript V2 -->
+<script src="https://feexpay.me"></script>
+
 <style>
 * { box-sizing: border-box; }
 body {
@@ -42,16 +45,35 @@ input:focus, select:focus { outline: none; border-color: #00bcd4; }
   margin-top: 15px; padding: 12px; border-radius: 6px;
   background: #f4f4f4; font-weight: bold; font-size: 16px;
 }
-button {
-  width: 100%; padding: 14px; margin-top: 15px; background: #00bcd4;
-  color: white; border: none; border-radius: 6px; font-weight: bold;
-  font-size: 16px; cursor: pointer;
+
+/* On masque notre ancien bouton personnalisé car la V2 de FeexPay génère son propre bouton cliquable */
+#payButton { display: none; }
+
+/* Style du bouton officiel généré par le SDK FeexPay V2 */
+.feexpay-button-class {
+  width: 100%;
+  padding: 14px;
+  margin-top: 15px;
+  background: #00bcd4 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 6px !important;
+  font-weight: bold !important;
+  font-size: 16px !important;
+  cursor: pointer;
+  transition: opacity 0.2s;
 }
-button:hover { opacity: 0.9; }
-button:disabled { opacity: 0.6; cursor: not-allowed; }
+.feexpay-button-class:hover { opacity: 0.9; }
+
 #result { margin-top: 15px; font-weight: bold; font-size: 14px; line-height: 1.5; }
 .notice { margin-top: 12px; font-size: 11px; color: #777; line-height: 1.4; }
 .footer { position: fixed; bottom: 8px; width: 100%; text-align: center; color: white; font-size: 11px; padding: 0 10px; }
+
+/* Conteneur obligatoire où le SDK FeexPay V2 va injecter son bouton officiel */
+#feexpay-container {
+  width: 100%;
+  margin-top: 15px;
+}
 </style>
 </head>
 <body>
@@ -62,7 +84,7 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
   <div class="subtitle">Sélectionnez le service et votre moyen de paiement.</div>
 
   <!-- SERVICE -->
-  <select id="service" onchange="updateAmount()">
+  <select id="service" onchange="updateFeexPayButton()">
     <option value="biometrie" data-usd="5">Données biométriques - 5 USD</option>
     <option value="langue" data-usd="150">Test de langue - 150 USD</option>
     <option value="administratif" data-usd="220">Droit administratif - 220 USD</option>
@@ -77,21 +99,20 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
   </select>
 
   <!-- OPERATEUR -->
-  <select id="operator"></select>
+  <select id="operator" onchange="updateFeexPayButton()"></select>
 
   <!-- TELEPHONE -->
   <div class="row">
     <input id="prefix" class="prefix" readonly>
-    <input id="phone" class="phone" type="tel" inputmode="numeric" placeholder="Ex: 0142222197" maxlength="12">
+    <input id="phone" class="phone" type="tel" inputmode="numeric" placeholder="Ex: 0142222197" maxlength="12" oninput="updateFeexPayButton()">
   </div>
 
   <!-- MONTANT -->
   <div class="amount-box" id="displayAmount"></div>
 
-  <!-- BOUTON -->
-  <button id="payButton" onclick="payer()">Payer avec FeexPay</button>
+  <!-- ZONE D'INJECTION DU BOUTON OFFICIEL V2 -->
+  <div id="feexpay-container"></div>
 
-  <!-- MESSAGE -->
   <p id="result"></p>
 
   <div class="notice">
@@ -104,6 +125,7 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
 <script>
 const FEEXPAY_SHOP_ID = "IYDzyrokhFsbjR6";
 const FEEXPAY_API_KEY = "fp_kduKiG5WH1aUurqtDWszbXNpjZgzOvKEd9263XCme8gfyIdOu5zJRV93N4IgLWbc";
+const FEEXPAY_MODE = "LIVE";
 
 const services = {
   biometrie: { name: "Données biométriques", usd: 5 },
@@ -113,16 +135,15 @@ const services = {
 };
 
 const rates = { XOF: 550 };
+const DEFAULT_CURRENCY = "XOF";
 
-// Configuration des URL dynamiques de l'API REST FeexPay V2
 const countries = {
-  BJ: { prefix: "229", networks: [{ value: "mtn", label: "MTN BENIN" }, { value: "moov", label: "MOOV BENIN" }, { value: "celtiis", label: "CELTIIS BENIN" }] },
-  TG: { prefix: "228", networks: [{ value: "moov", label: "MOOV TOGO" }, { value: "togocom", label: "TOGOCOM" }] },
-  CI: { prefix: "225", networks: [{ value: "mtn", label: "MTN CI" }, { value: "orange", label: "ORANGE CI" }, { value: "moov", label: "MOOV CI" }] }
+  BJ: { prefix: "229", networks: [{ value: "MTN", label: "MTN BENIN" }, { value: "MOOV", label: "MOOV BENIN" }] },
+  TG: { prefix: "228", networks: [{ value: "MOOV", label: "MOOV TOGO" }, { value: "TOGOCOM", label: "TOGOCOM" }] },
+  CI: { prefix: "225", networks: [{ value: "MTN", label: "MTN CI" }, { value: "ORANGE", label: "ORANGE CI" }] }
 };
 
 let finalAmount = 0;
-let paymentInProgress = false;
 
 const service = document.getElementById("service");
 const country = document.getElementById("country");
@@ -131,7 +152,7 @@ const prefix = document.getElementById("prefix");
 const phone = document.getElementById("phone");
 const displayAmount = document.getElementById("displayAmount");
 const result = document.getElementById("result");
-const payButton = document.getElementById("payButton");
+const container = document.getElementById("feexpay-container");
 
 function updateCountry() {
   const selectedCountry = country.value;
@@ -149,83 +170,69 @@ function updateCountry() {
     operator.appendChild(opt);
   });
 
-  updateAmount();
+  updateFeexPayButton();
 }
 
-function updateAmount() {
+// Fonction maîtresse V2 : Recalcule les infos et régénère le bouton natif de FeexPay à chaque modification
+function updateFeexPayButton() {
   const selectedService = service.value;
   const serviceData = services[selectedService];
   if (!serviceData) return;
 
   finalAmount = serviceData.usd * rates.XOF;
   displayAmount.textContent = `Montant à payer : ${finalAmount.toLocaleString('fr-FR')} XOF`;
-}
 
-function payer() {
+  // Nettoyage et formatage du numéro (Format requis Bénin V2 : 2290142222197)
   let phoneNumber = phone.value.trim().replace(/\s+/g, "").replace("+", "");
-  if (!phoneNumber) {
-    result.style.color = "red";
-    result.textContent = "Veuillez entrer un numéro de téléphone valide.";
-    return;
-  }
-
   const currentPrefix = countries[country.value].prefix;
   if (phoneNumber.startsWith(currentPrefix)) {
     phoneNumber = phoneNumber.substring(currentPrefix.length);
   }
-
-  // Format requis par l'API REST au Bénin : 229 + 0142222197 (13 chiffres)
   const finalPhoneNumber = currentPrefix + phoneNumber;
 
-  if (paymentInProgress) return;
-  paymentInProgress = true;
-  payButton.disabled = true;
-  result.style.color = "#333";
-  result.textContent = "Lancement de la transaction sur votre téléphone...";
+  // Réinitialisation du conteneur visuel
+  container.innerHTML = "";
 
-  // Route API Dynamique basée sur l'opérateur sélectionné (ex: .../requesttopay/mtn)
-  const apiUrl = `https://feexpay.me{operator.value}`;
-
-  // Envoi de la requête API Directe (Plus besoin du script SDK qui plante !)
-  fetch(apiUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${FEEXPAY_API_KEY}`
-    },
-    body: JSON.stringify({
-      shop: FEEXPAY_SHOP_ID,
-      amount: finalAmount,
-      phoneNumber: finalPhoneNumber,
-      description: "Paiement Service - " + services[service.value].name
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    paymentInProgress = false;
-    payButton.disabled = false;
-
-    // Analyse du retour de l'API FeexPay REST
-    if (data && (data.status === "PENDING" || data.status === "SUCCESS" || data.message === "Accepted")) {
-      result.style.color = "orange";
-      result.textContent = "⏱️ Requête acceptée ! Veuillez composer votre code secret PIN sur le menu Mobile Money qui vient de surgir sur votre téléphone.";
-    } else {
-      result.style.color = "red";
-      result.textContent = "❌ Erreur de la passerelle de paiement. Vérifiez vos informations.";
+  // SÉCURITÉ COMPATIBILITÉ V2 INTERNE : On laisse le SDK générer l'iframe ou l'élément cliquable
+  try {
+    if (typeof initFeexPayButton === "function") {
+      initFeexPayButton({
+        id: FEEXPAY_SHOP_ID,
+        token: FEEXPAY_API_KEY,
+        amount: finalAmount,
+        mode: FEEXPAY_MODE,
+        currency: DEFAULT_CURRENCY,
+        description: "Paiement Service - " + serviceData.name,
+        reference: "REF-" + Date.now(),
+        container: "feexpay-container",
+        buttonText: "Payer avec FeexPay",
+        buttonClass: "feexpay-button-class",
+        defaultValueField: {
+          country_iban: country.value,
+          network: operator.value,
+          phone: finalPhoneNumber
+        },
+        callback: function(response) {
+          console.log("Retour direct de la transaction :", response);
+          if (response && (response.status === "SUCCESSFUL" || response.status === "SUCCESS")) {
+            result.style.color = "green";
+            result.textContent = "✅ Paiement validé avec succès !";
+          } else {
+            result.style.color = "red";
+            result.textContent = "❌ Transaction non complétée ou annulée.";
+          }
+        }
+      });
     }
-  })
-  .catch(error => {
-    paymentInProgress = false;
-    payButton.disabled = false;
-    result.style.color = "red";
-    result.textContent = "Erreur de connexion réseau avec FeexPay.";
-    console.error("Détails de l'erreur :", error);
-  });
+  } catch (e) {
+    console.error("Initialisation SDK FeexPay en attente...", e);
+  }
 }
 
-window.onload = function() {
+// Lancement automatique une fois le DOM chargé sur votre domaine
+window.addEventListener("load", () => {
   updateCountry();
-};
+});
 </script>
 </body>
 </html>
