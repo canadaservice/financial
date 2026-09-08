@@ -915,13 +915,7 @@ function getPhoneNumber() {
    * national au début.
    */
 
-  if (
-    number.startsWith("0")
-  ) {
 
-    number =
-      number.substring(1);
-  }
 
   if (
     !/^\d+$/.test(number)
