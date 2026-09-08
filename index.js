@@ -9,6 +9,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+
 // =====================================================
 // CONFIGURATION RENDER
 // =====================================================
@@ -18,7 +19,9 @@ const PORT = process.env.PORT || 3000;
 const FEEXPAY_API_KEY = process.env.FEEXPAY_API_KEY;
 const FEEXPAY_SHOP_ID = process.env.FEEXPAY_SHOP_ID;
 
+
 // Vérification des variables
+
 if (!FEEXPAY_API_KEY) {
   console.error("ERREUR : FEEXPAY_API_KEY n'est pas configurée.");
 }
@@ -26,6 +29,7 @@ if (!FEEXPAY_API_KEY) {
 if (!FEEXPAY_SHOP_ID) {
   console.error("ERREUR : FEEXPAY_SHOP_ID n'est pas configurée.");
 }
+
 
 // =====================================================
 // FICHIERS STATIQUES
@@ -42,6 +46,7 @@ app.get("/logo.png", (req, res) => {
 app.get("/background.jpg", (req, res) => {
   res.sendFile(path.join(__dirname, "background.jpg"));
 });
+
 
 // =====================================================
 // BASE DE DONNÉES
@@ -67,7 +72,8 @@ db.serialize(() => {
     )
   `);
 
-  // Ajout des colonnes si votre ancienne base existe déjà
+  // Ajout des colonnes si une ancienne base existe déjà
+
   db.run(
     `ALTER TABLE payments ADD COLUMN reference TEXT`,
     () => {}
@@ -79,16 +85,21 @@ db.serialize(() => {
   );
 });
 
+
 // =====================================================
 // SERVICES
 // =====================================================
 
+// PRIX DE TEST
+// 2 USD x 550 = 1100 XOF
+
 const services = {
-  biometrie: 1,
-  langue: 150,
-  administratif: 220,
-  total: 520
+  biometrie: 2,
+  langue: 2,
+  administratif: 2,
+  total: 2
 };
+
 
 // =====================================================
 // TAUX FIXE
@@ -96,6 +107,7 @@ const services = {
 // =====================================================
 
 const USD_TO_XOF = 550;
+
 
 // =====================================================
 // NORMALISATION PAYS
@@ -105,9 +117,12 @@ function normalizeCountry(country) {
 
   if (!country) return null;
 
-  const value = String(country).trim().toUpperCase();
+  const value = String(country)
+    .trim()
+    .toUpperCase();
 
   const countries = {
+
     BJ: "BEN",
     BENIN: "BEN",
     BEN: "BEN",
@@ -144,6 +159,7 @@ function normalizeCountry(country) {
   return countries[value] || value;
 }
 
+
 // =====================================================
 // NORMALISATION OPÉRATEUR
 // =====================================================
@@ -158,6 +174,7 @@ function normalizeOperator(operator) {
     .replace(/\s+/g, "_");
 }
 
+
 // =====================================================
 // NETTOYAGE DU NUMÉRO
 // =====================================================
@@ -170,22 +187,26 @@ function cleanPhone(phone) {
     .replace(/\D/g, "");
 
   // Si le numéro commence déjà par 229
+
   if (value.startsWith("229")) {
     return value;
   }
 
   // Numéro béninois local : 01XXXXXXXX
+
   if (value.length === 10 && value.startsWith("01")) {
     return "229" + value;
   }
 
   // Ancien format béninois à 8 chiffres
+
   if (value.length === 8) {
     return "22901" + value;
   }
 
   return value;
 }
+
 
 // =====================================================
 // VALIDATION DU NUMÉRO MTN BÉNIN
@@ -203,6 +224,7 @@ function isValidBeninPhone(phone) {
   return true;
 }
 
+
 // =====================================================
 // API DE SANTÉ
 // =====================================================
@@ -212,13 +234,15 @@ app.get("/api/health", (req, res) => {
   res.json({
     status: "online",
     service: "payment-api",
-    feexpay: FEEXPAY_API_KEY && FEEXPAY_SHOP_ID
-      ? "configured"
-      : "not_configured",
+    feexpay:
+      FEEXPAY_API_KEY && FEEXPAY_SHOP_ID
+        ? "configured"
+        : "not_configured",
     time: new Date().toISOString()
   });
 
 });
+
 
 // =====================================================
 // PAIEMENT
@@ -248,6 +272,7 @@ app.post("/api/pay", async (req, res) => {
   console.log("Pays :", normalizedCountry);
   console.log("Opérateur :", normalizedOperator);
 
+
   // ===================================================
   // VALIDATION
   // ===================================================
@@ -255,18 +280,22 @@ app.post("/api/pay", async (req, res) => {
   if (!phone || !service || !country || !operator) {
 
     return res.status(400).json({
+      success: false,
       error: "Données obligatoires manquantes."
     });
 
   }
 
+
   if (!services[service]) {
 
     return res.status(400).json({
+      success: false,
       error: "Service de paiement invalide."
     });
 
   }
+
 
   // ===================================================
   // POUR CETTE VERSION :
@@ -279,10 +308,12 @@ app.post("/api/pay", async (req, res) => {
   ) {
 
     return res.status(400).json({
+      success: false,
       error: "Cette version est configurée pour MTN Bénin."
     });
 
   }
+
 
   // ===================================================
   // VALIDATION NUMÉRO
@@ -293,11 +324,13 @@ app.post("/api/pay", async (req, res) => {
     console.log("Numéro refusé :", cleanedPhone);
 
     return res.status(400).json({
+      success: false,
       error:
         "Numéro MTN Bénin invalide. Utilisez un numéro au format 01XXXXXXXX."
     });
 
   }
+
 
   // ===================================================
   // VÉRIFICATION FEEXPAY
@@ -305,13 +338,17 @@ app.post("/api/pay", async (req, res) => {
 
   if (!FEEXPAY_API_KEY || !FEEXPAY_SHOP_ID) {
 
-    console.error("FEEXPAY_API_KEY ou FEEXPAY_SHOP_ID manquant.");
+    console.error(
+      "FEEXPAY_API_KEY ou FEEXPAY_SHOP_ID manquant."
+    );
 
     return res.status(500).json({
+      success: false,
       error: "Configuration FeexPay manquante sur le serveur."
     });
 
   }
+
 
   // ===================================================
   // CALCUL DU MONTANT
@@ -319,12 +356,14 @@ app.post("/api/pay", async (req, res) => {
 
   const usd = services[service];
 
-  // Taux fixe :
   // 1 USD = 550 XOF
 
-  const amount = Math.round(usd * USD_TO_XOF);
+  const amount = Math.round(
+    usd * USD_TO_XOF
+  );
 
   const currency = "XOF";
+
 
   console.log("");
   console.log("------------- PAIEMENT -------------");
@@ -337,6 +376,7 @@ app.post("/api/pay", async (req, res) => {
   console.log("Montant XOF :", amount);
   console.log("Devise :", currency);
   console.log("------------------------------------");
+
 
   // ===================================================
   // DESCRIPTION
@@ -360,6 +400,7 @@ app.post("/api/pay", async (req, res) => {
     description = "Paiement services";
   }
 
+
   // ===================================================
   // REQUÊTE FEEXPAY
   // ===================================================
@@ -369,6 +410,7 @@ app.post("/api/pay", async (req, res) => {
     const feexpayUrl =
       "https://api-v2.feexpay.me/api/transactions/public/requesttopay/mtn";
 
+
     console.log("");
     console.log("====== ENVOI VERS FEEXPAY ======");
     console.log("URL :", feexpayUrl);
@@ -377,40 +419,50 @@ app.post("/api/pay", async (req, res) => {
     console.log("Phone :", cleanedPhone);
     console.log("================================");
 
-    const paymentRes = await fetch(feexpayUrl, {
 
-      method: "POST",
+    const paymentRes = await fetch(
+      feexpayUrl,
+      {
+        method: "POST",
 
-      headers: {
-        "Authorization": `Bearer ${FEEXPAY_API_KEY}`,
-        "Content-Type": "application/json"
-      },
+        headers: {
+          "Authorization":
+            `Bearer ${FEEXPAY_API_KEY}`,
 
-      body: JSON.stringify({
+          "Content-Type":
+            "application/json"
+        },
 
-        shop: FEEXPAY_SHOP_ID,
+        body: JSON.stringify({
 
-        amount: amount,
+          shop: FEEXPAY_SHOP_ID,
 
-        phoneNumber: Number(cleanedPhone),
+          amount: amount,
 
-        description: description
+          phoneNumber:
+            Number(cleanedPhone),
 
-      })
+          description:
+            description
 
-    });
+        })
+      }
+    );
+
 
     // =================================================
     // LECTURE DE LA RÉPONSE
     // =================================================
 
-    const responseText = await paymentRes.text();
+    const responseText =
+      await paymentRes.text();
 
     let data;
 
     try {
 
-      data = JSON.parse(responseText);
+      data =
+        JSON.parse(responseText);
 
     } catch {
 
@@ -420,11 +472,13 @@ app.post("/api/pay", async (req, res) => {
 
     }
 
+
     console.log("");
     console.log("======= RÉPONSE FEEXPAY =======");
     console.log(data);
     console.log("HTTP :", paymentRes.status);
     console.log("===============================");
+
 
     // =================================================
     // ERREUR FEEXPAY
@@ -436,6 +490,7 @@ app.post("/api/pay", async (req, res) => {
         data.message ||
         data.error ||
         "FeexPay a refusé la demande de paiement.";
+
 
       db.run(
         `
@@ -466,29 +521,37 @@ app.post("/api/pay", async (req, res) => {
         ]
       );
 
+
       return res.status(paymentRes.status).json({
 
         success: false,
 
         error: errorMessage,
 
-        status: data.status || "ERROR",
+        status:
+          data.status || "ERROR",
 
-        reference: data.reference || null
+        reference:
+          data.reference || null
 
       });
 
     }
 
+
     // =================================================
     // RÉPONSE ACCEPTÉE
     // =================================================
 
-    const status = data.status || "PENDING";
+    const status =
+      data.status || "PENDING";
 
-    const reference = data.reference || null;
+    const reference =
+      data.reference || null;
 
-    const message = data.message || "Accepted";
+    const message =
+      data.message || "Accepted";
+
 
     // =================================================
     // ENREGISTREMENT
@@ -535,6 +598,7 @@ app.post("/api/pay", async (req, res) => {
       }
     );
 
+
     // =================================================
     // RÉPONSE AU NAVIGATEUR
     // =================================================
@@ -557,12 +621,14 @@ app.post("/api/pay", async (req, res) => {
 
     });
 
+
   } catch (error) {
 
     console.error("");
     console.error("======= ERREUR FEEXPAY =======");
     console.error(error);
     console.error("==============================");
+
 
     return res.status(500).json({
 
@@ -577,56 +643,348 @@ app.post("/api/pay", async (req, res) => {
 
 });
 
+
+// =====================================================
+// VÉRIFICATION DU STATUT FEEXPAY
+// =====================================================
+
+app.get(
+  "/api/payment-status/:reference",
+  async (req, res) => {
+
+    const reference =
+      req.params.reference;
+
+
+    if (!reference) {
+
+      return res.status(400).json({
+        success: false,
+        error:
+          "Référence de transaction manquante."
+      });
+
+    }
+
+
+    if (!FEEXPAY_API_KEY) {
+
+      return res.status(500).json({
+        success: false,
+        error:
+          "Clé API FeexPay manquante sur le serveur."
+      });
+
+    }
+
+
+    const statusUrl =
+      `https://api-v2.feexpay.me/api/transactions/public/single/status/${encodeURIComponent(reference)}`;
+
+
+    try {
+
+      console.log("");
+      console.log(
+        "====== VÉRIFICATION FEEXPAY ======"
+      );
+
+      console.log(
+        "Reference :",
+        reference
+      );
+
+      console.log(
+        "URL :",
+        statusUrl
+      );
+
+      console.log(
+        "================================="
+      );
+
+
+      const statusRes =
+        await fetch(
+          statusUrl,
+          {
+            method: "GET",
+
+            headers: {
+              "Authorization":
+                `Bearer ${FEEXPAY_API_KEY}`,
+
+              "Content-Type":
+                "application/json"
+            }
+          }
+        );
+
+
+      const responseText =
+        await statusRes.text();
+
+
+      let data;
+
+      try {
+
+        data =
+          JSON.parse(responseText);
+
+      } catch {
+
+        data = {
+          message: responseText
+        };
+
+      }
+
+
+      console.log("");
+      console.log(
+        "======= STATUT FEEXPAY ======="
+      );
+
+      console.log(data);
+
+      console.log(
+        "HTTP :",
+        statusRes.status
+      );
+
+      console.log(
+        "=============================="
+      );
+
+
+      if (!statusRes.ok) {
+
+        return res
+          .status(statusRes.status)
+          .json({
+
+            success: false,
+
+            error:
+              data.message ||
+              data.error ||
+              "Impossible de vérifier le statut.",
+
+            reference:
+              reference
+
+          });
+
+      }
+
+
+      const status =
+        data.status || "PENDING";
+
+
+      const message =
+        data.responsemsg ||
+        data.message ||
+        data.reason ||
+        status;
+
+
+      // =================================================
+      // MISE À JOUR SQLITE
+      // =================================================
+
+      db.run(
+        `
+        UPDATE payments
+        SET
+          status = ?,
+          message = ?
+        WHERE reference = ?
+        `,
+        [
+          status,
+          message,
+          reference
+        ],
+        (err) => {
+
+          if (err) {
+
+            console.error(
+              "Erreur mise à jour SQLite :",
+              err.message
+            );
+
+          }
+
+        }
+      );
+
+
+      // =================================================
+      // RÉPONSE AU NAVIGATEUR
+      // =================================================
+
+      return res.json({
+
+        success: true,
+
+        reference:
+          data.reference ||
+          reference,
+
+        status:
+          status,
+
+        amount:
+          data.amount ||
+          null,
+
+        phone:
+          data.phoneNumber ||
+          null,
+
+        message:
+          message,
+
+        reason:
+          data.reason ||
+          "",
+
+        description:
+          data.description ||
+          ""
+
+      });
+
+    } catch (error) {
+
+      console.error("");
+      console.error(
+        "===== ERREUR STATUT FEEXPAY ====="
+      );
+
+      console.error(error);
+
+      console.error(
+        "================================="
+      );
+
+
+      return res.status(500).json({
+
+        success: false,
+
+        error:
+          "Impossible de vérifier le statut FeexPay.",
+
+        reference:
+          reference
+
+      });
+
+    }
+
+  }
+);
+
+
 // =====================================================
 // HISTORIQUE DES PAIEMENTS
 // =====================================================
 
-app.get("/api/payments", (req, res) => {
+app.get(
+  "/api/payments",
+  (req, res) => {
 
-  db.all(
-    `
-    SELECT *
-    FROM payments
-    ORDER BY created_at DESC
-    `,
-    [],
-    (err, rows) => {
+    db.all(
+      `
+      SELECT *
+      FROM payments
+      ORDER BY created_at DESC
+      `,
+      [],
+      (err, rows) => {
 
-      if (err) {
+        if (err) {
 
-        console.error(
-          "Erreur SQLite :",
-          err.message
-        );
+          console.error(
+            "Erreur SQLite :",
+            err.message
+          );
 
-        return res.status(500).json({
-          error: "Erreur base de données."
-        });
+          return res.status(500).json({
+            error:
+              "Erreur base de données."
+          });
+
+        }
+
+
+        res.json(rows);
 
       }
+    );
 
-      res.json(rows);
+  }
+);
 
-    }
-  );
-
-});
 
 // =====================================================
 // PORT
 // =====================================================
 
-app.listen(PORT, () => {
+app.listen(
+  PORT,
+  () => {
 
-  console.log("");
-  console.log("========================================");
-  console.log("       SERVEUR DE PAIEMENT ACTIF");
-  console.log("========================================");
-  console.log("Port :", PORT);
-  console.log("FeexPay :", FEEXPAY_API_KEY ? "API KEY OK" : "API KEY MANQUANTE");
-  console.log("Shop ID :", FEEXPAY_SHOP_ID ? "SHOP ID OK" : "SHOP ID MANQUANT");
-  console.log("Taux USD/XOF :", USD_TO_XOF);
-  console.log("========================================");
-  console.log("");
+    console.log("");
+    console.log(
+      "========================================"
+    );
 
-});
+    console.log(
+      "       SERVEUR DE PAIEMENT ACTIF"
+    );
+
+    console.log(
+      "========================================"
+    );
+
+    console.log(
+      "Port :",
+      PORT
+    );
+
+    console.log(
+      "FeexPay :",
+      FEEXPAY_API_KEY
+        ? "API KEY OK"
+        : "API KEY MANQUANTE"
+    );
+
+    console.log(
+      "Shop ID :",
+      FEEXPAY_SHOP_ID
+        ? "SHOP ID OK"
+        : "SHOP ID MANQUANT"
+    );
+
+    console.log(
+      "Taux USD/XOF :",
+      USD_TO_XOF
+    );
+
+    console.log(
+      "Prix test biometrie : 2 USD = 1100 XOF"
+    );
+
+    console.log(
+      "========================================"
+    );
+
+    console.log("");
+
+  }
+);
