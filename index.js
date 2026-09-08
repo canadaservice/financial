@@ -81,7 +81,7 @@ const NETWORKS = {
 
   BEN: {
     name: "Bénin",
-    prefix: "2290",
+    prefix: "229",
     currency: "XOF",
 
     networks: {
