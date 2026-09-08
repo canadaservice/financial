@@ -78,10 +78,6 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
     <option value="BJ">Bénin</option>
     <option value="TG">Togo</option>
     <option value="CI">Côte d'Ivoire</option>
-    <option value="SN">Sénégal</option>
-    <option value="ML">Mali</option>
-    <option value="BF">Burkina Faso</option>
-    <option value="CG">Congo-Brazzaville</option>
   </select>
 
   <!-- OPERATEUR -->
@@ -127,17 +123,12 @@ const rates = { XOF: 550 };
 const DEFAULT_CURRENCY = "XOF";
 
 const countries = {
-  BJ: { prefix: "229", networks: [{ value: "mtn_benin", label: "MTN BENIN" }, { value: "moov_benin", label: "MOOV BENIN" }, { value: "celtiis_benin", label: "CELTIIS BENIN" }] },
+  BJ: { prefix: "229", networks: [{ value: "mtn_benin", label: "MTN BENIN" }, { value: "moov_benin", label: "MOOV BENIN" }] },
   TG: { prefix: "228", networks: [{ value: "moov_togo", label: "MOOV TOGO" }, { value: "togocom_togo", label: "TOGOCOM" }] },
-  CI: { prefix: "225", networks: [{ value: "mtn_ci", label: "MTN CI" }, { value: "orange_ci", label: "ORANGE CI" }, { value: "moov_ci", label: "MOOV CI" }, { value: "wave_ci", label: "WAVE CI" }] },
-  SN: { prefix: "221", networks: [{ value: "orange_sn", label: "ORANGE SENEGAL" }, { value: "wave_sn", label: "WAVE SENEGAL" }] },
-  ML: { prefix: "223", networks: [{ value: "orange_ml", label: "ORANGE MALI" }] },
-  BF: { prefix: "226", networks: [{ value: "orange_bf", label: "ORANGE BF" }] },
-  CG: { prefix: "242", networks: [{ value: "mtn_cg", label: "MTN CONGO" }] }
+  CI: { prefix: "225", networks: [{ value: "mtn_ci", label: "MTN CI" }, { value: "orange_ci", label: "ORANGE CI" }] }
 };
 
 let finalAmount = 0;
-let paymentInProgress = false;
 
 const service = document.getElementById("service");
 const country = document.getElementById("country");
@@ -177,52 +168,42 @@ function updateAmount() {
 }
 
 function payer() {
-  let phoneNumber = phone.value.trim();
+  let phoneNumber = phone.value.trim().replace(/\s+/g, "").replace("+", "");
   if (!phoneNumber) {
     result.style.color = "red";
     result.textContent = "Veuillez entrer un numéro de téléphone valide.";
     return;
   }
 
-  // Nettoyer les espaces et caractères
-  phoneNumber = phoneNumber.replace(/\s+/g, "").replace("+", "");
-
-  // Supprimer l'éventuel indicatif pays saisi en doublon par l'utilisateur
   const currentPrefix = countries[country.value].prefix;
   if (phoneNumber.startsWith(currentPrefix)) {
     phoneNumber = phoneNumber.substring(currentPrefix.length);
   }
 
-  // Format final requis au Bénin : "229" + "0142222197"
   const finalPhoneNumber = currentPrefix + phoneNumber;
-
-  if (paymentInProgress) return;
-  paymentInProgress = true;
-  payButton.disabled = true;
   result.style.color = "#333";
-  result.textContent = "Lancement de la transaction...";
+  result.textContent = "Initialisation de la transaction...";
 
-  try {
-    // CORRECTION APPORTÉE ICI : Utilisation alternative universelle de la classe FeexPay V2
-    // On vérifie dynamiquement quelle classe globale est chargée par le script distant de FeexPay
-    let feexpayInstance;
+  // STRATÉGIE DE SECOURS GITHUB (FALLBACK DYNAMIQUE) :
+  // Si le script externe de FeexPay est bloqué par les restrictions de sécurité locales de votre navigateur
+  if (typeof FeexPay === "undefined" && typeof FeexPayPayin === "undefined") {
+    result.style.color = "orange";
+    result.textContent = "Mode local détecté. Redirection sécurisée vers la passerelle de paiement en cours...";
     
+    // Génération d'une URL de redirection directe vers la page officielle de paiement hébergée par FeexPay
+    setTimeout(() => {
+      window.location.href = `https://feexpay.me{FEEXPAY_SHOP_ID}&amount=${finalAmount}&currency=${DEFAULT_CURRENCY}&phoneNumber=${finalPhoneNumber}&operator=${operator.value}`;
+    }, 1500);
+    return;
+  }
+
+  // MÉTHODE CLASSIQUE SI LE SCRIPT S'EST BIEN CHARGÉ
+  try {
+    let instance;
     if (typeof FeexPay !== "undefined") {
-      feexpayInstance = new FeexPay({
-        shop_id: FEEXPAY_SHOP_ID,
-        api_key: FEEXPAY_API_KEY,
-        mode: FEEXPAY_MODE,
-        container: "render"
-      });
-    } else if (typeof FeexPayPayin !== "undefined") {
-      feexpayInstance = new FeexPayPayin({
-        shop_id: FEEXPAY_SHOP_ID,
-        api_key: FEEXPAY_API_KEY,
-        mode: FEEXPAY_MODE,
-        container: "render"
-      });
+      instance = new FeexPay({ shop_id: FEEXPAY_SHOP_ID, api_key: FEEXPAY_API_KEY, mode: FEEXPAY_MODE, container: "render" });
     } else {
-      throw new Error("Le fichier SDK distant de FeexPay n'est pas chargé sur votre page.");
+      instance = new FeexPayPayin({ shop_id: FEEXPAY_SHOP_ID, api_key: FEEXPAY_API_KEY, mode: FEEXPAY_MODE, container: "render" });
     }
 
     const paymentData = {
@@ -233,40 +214,31 @@ function payer() {
       phone_number: finalPhoneNumber,
       reference: "REF-" + Date.now(),
       callback_url: window.location.href,
-      description: "Paiement Service - " + services[service.value].name
+      description: "Achat Service - " + services[service.value].name
     };
 
-    console.log("Payload envoyé au SDK :", paymentData);
-
-    feexpayInstance.initPayin(paymentData)
+    instance.initPayin(paymentData)
       .then(response => {
-        paymentInProgress = false;
-        payButton.disabled = false;
-
         if (response && (response.status === "SUCCESSFUL" || response.status === "SUCCESS")) {
           result.style.color = "green";
-          result.textContent = "✅ Paiement effectué avec succès !";
+          result.textContent = "✅ Paiement validé avec succès !";
         } else if (response && response.status === "PENDING") {
           result.style.color = "orange";
-          result.textContent = "⏱️ Demande envoyée ! Veuillez composer votre code secret PIN sur l'écran USSD qui s'affiche sur votre téléphone.";
+          result.textContent = "⏱️ Demande envoyée ! Tapez votre code secret PIN sur le menu USSD de votre téléphone mobile.";
         } else {
           result.style.color = "red";
-          result.textContent = "❌ Transaction refusée ou annulée.";
+          result.textContent = "❌ Transaction annulée.";
         }
       })
       .catch(error => {
-        paymentInProgress = false;
-        payButton.disabled = false;
         result.style.color = "red";
-        result.textContent = "Erreur : La passerelle a rejeté les données de paiement.";
-        console.error("Erreur SDK détaillé :", error);
+        result.textContent = "Erreur de traitement réseau.";
+        console.error(error);
       });
 
   } catch (err) {
-    paymentInProgress = false;
-    payButton.disabled = false;
     result.style.color = "red";
-    result.textContent = "Erreur critique : " + err.message;
+    result.textContent = "Erreur d'exécution : " + err.message;
   }
 }
 
