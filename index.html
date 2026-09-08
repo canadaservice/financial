@@ -1,1380 +1,1265 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-  <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
-  <title>Paiement sécurisé</title>
-
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      font-family:
-        Inter,
-        Arial,
-        Helvetica,
-        sans-serif;
-
-      background:
-        linear-gradient(
-          135deg,
-          #f5f7fb,
-          #eef2f7
-        );
-
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-
-      padding: 20px;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 520px;
-    }
-
-    .card {
-      background: #ffffff;
-      border-radius: 22px;
-      padding: 28px;
-
-      box-shadow:
-        0 15px 45px rgba(
-          0,
-          0,
-          0,
-          0.10
-        );
-    }
-
-    .logo {
-      text-align: center;
-      margin-bottom: 10px;
-    }
-
-    .logo strong {
-      font-size: 26px;
-      color: #111827;
-    }
-
-    .subtitle {
-      text-align: center;
-      color: #6b7280;
-      margin-bottom: 28px;
-      font-size: 14px;
-    }
-
-    label {
-      display: block;
-      font-weight: 600;
-      color: #374151;
-      margin-bottom: 8px;
-    }
-
-    .field {
-      margin-bottom: 18px;
-    }
-
-    select,
-    input {
-      width: 100%;
-      border: 1px solid #d1d5db;
-      border-radius: 12px;
-      padding: 14px 15px;
-
-      font-size: 16px;
-      outline: none;
-
-      background: #fff;
-    }
-
-    select:focus,
-    input:focus {
-      border-color: #111827;
-      box-shadow:
-        0 0 0 3px
-        rgba(
-          17,
-          24,
-          39,
-          0.08
-        );
-    }
-
-    .phone-row {
-      display: flex;
-      gap: 8px;
-    }
-
-    .prefix {
-      width: 95px;
-      background: #f3f4f6;
-      font-weight: 600;
-    }
-
-    .amount-box {
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
-      border-radius: 14px;
-
-      padding: 16px;
-      margin-bottom: 20px;
-    }
-
-    .amount-line {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .amount-label {
-      color: #6b7280;
-    }
-
-    .amount-value {
-      font-size: 23px;
-      font-weight: 800;
-      color: #111827;
-    }
-
-    .otp-box {
-      display: none;
-
-      background: #fff7ed;
-      border: 1px solid #fed7aa;
-      border-radius: 14px;
-
-      padding: 15px;
-      margin-bottom: 18px;
-    }
-
-    .otp-box.visible {
-      display: block;
-    }
-
-    .otp-info {
-      color: #9a3412;
-      font-size: 13px;
-      line-height: 1.5;
-      margin-bottom: 10px;
-    }
-
-    button {
-      width: 100%;
-      border: none;
-      border-radius: 13px;
-
-      padding: 16px;
-
-      font-size: 17px;
-      font-weight: 700;
-
-      cursor: pointer;
-
-      background: #111827;
-      color: #ffffff;
-
-      transition:
-        transform 0.15s,
-        opacity 0.15s;
-    }
-
-    button:hover {
-      opacity: 0.92;
-    }
-
-    button:active {
-      transform: scale(0.99);
-    }
-
-    button:disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
-    }
-
-    .result {
-      display: none;
-
-      margin-top: 20px;
-      border-radius: 15px;
-      padding: 17px;
-    }
-
-    .result.visible {
-      display: block;
-    }
-
-    .result.pending {
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
-    }
-
-    .result.success {
-      background: #f0fdf4;
-      border: 1px solid #bbf7d0;
-    }
-
-    .result.failed {
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-    }
-
-    .result-title {
-      font-weight: 800;
-      margin-bottom: 7px;
-    }
-
-    .result-message {
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    .reference {
-      margin-top: 10px;
-      font-family: monospace;
-      font-size: 12px;
-      word-break: break-all;
-    }
-
-    .payment-link {
-      display: none;
-
-      margin-top: 15px;
-
-      text-decoration: none;
-
-      background: #111827;
-      color: white;
-
-      padding: 13px 15px;
-
-      border-radius: 11px;
-
-      text-align: center;
-      font-weight: 700;
-    }
-
-    .payment-link.visible {
-      display: block;
-    }
-
-    .spinner {
-      display: inline-block;
-
-      width: 17px;
-      height: 17px;
-
-      border: 2px solid
-        rgba(
-          255,
-          255,
-          255,
-          0.4
-        );
-
-      border-top-color: #ffffff;
-
-      border-radius: 50%;
-
-      animation:
-        spin 0.7s linear infinite;
-
-      vertical-align: -3px;
-      margin-right: 7px;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    .small {
-      text-align: center;
-      color: #9ca3af;
-      font-size: 12px;
-      margin-top: 18px;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-  </style>
+
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
+
+<title>Paiement Mobile Money</title>
+
+<style>
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+
+  margin: 0;
+
+  min-height: 100vh;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  background:
+    linear-gradient(
+      rgba(0,0,0,0.35),
+      rgba(0,0,0,0.35)
+    ),
+    url("background.jpg")
+    center center / cover
+    fixed no-repeat;
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  padding: 20px;
+}
+
+.box {
+
+  width: 100%;
+
+  max-width: 520px;
+
+  background: #ffffff;
+
+  border-radius: 18px;
+
+  padding: 30px;
+
+  box-shadow:
+    0 15px 50px
+    rgba(0,0,0,0.25);
+}
+
+.logo {
+
+  display: block;
+
+  width: 170px;
+
+  max-width: 80%;
+
+  margin:
+    0 auto 20px auto;
+}
+
+h1 {
+
+  text-align: center;
+
+  margin:
+    0 0 25px 0;
+
+  color: #222;
+
+  font-size: 25px;
+}
+
+label {
+
+  display: block;
+
+  margin-top: 15px;
+
+  margin-bottom: 7px;
+
+  font-weight: bold;
+
+  color: #333;
+}
+
+select,
+input {
+
+  width: 100%;
+
+  height: 48px;
+
+  border: 1px solid #ccc;
+
+  border-radius: 10px;
+
+  padding: 0 13px;
+
+  font-size: 16px;
+
+  background: #fff;
+
+  outline: none;
+}
+
+select:focus,
+input:focus {
+
+  border-color: #1687ff;
+
+  box-shadow:
+    0 0 0 2px
+    rgba(22,135,255,0.12);
+}
+
+.phone-row {
+
+  display: flex;
+
+  gap: 8px;
+}
+
+.prefix {
+
+  width: 90px;
+
+  flex-shrink: 0;
+
+  background: #f4f4f4;
+
+  text-align: center;
+
+  font-weight: bold;
+}
+
+.phone {
+
+  flex: 1;
+}
+
+.amount {
+
+  margin-top: 20px;
+
+  padding: 17px;
+
+  border-radius: 12px;
+
+  background: #f4f8fb;
+
+  text-align: center;
+
+  font-size: 19px;
+
+  font-weight: bold;
+
+  color: #1476c8;
+}
+
+button {
+
+  width: 100%;
+
+  height: 52px;
+
+  margin-top: 20px;
+
+  border: 0;
+
+  border-radius: 11px;
+
+  background: #087fce;
+
+  color: white;
+
+  font-size: 17px;
+
+  font-weight: bold;
+
+  cursor: pointer;
+
+  transition:
+    0.2s;
+}
+
+button:hover {
+
+  background: #066aa9;
+}
+
+button:disabled {
+
+  opacity: 0.6;
+
+  cursor: not-allowed;
+}
+
+#result {
+
+  min-height: 55px;
+
+  margin-top: 20px;
+
+  text-align: center;
+
+  line-height: 1.5;
+
+  font-size: 15px;
+}
+
+.status-box {
+
+  display: none;
+
+  margin-top: 15px;
+
+  padding: 15px;
+
+  border-radius: 10px;
+
+  text-align: center;
+
+  font-weight: bold;
+}
+
+.status-pending {
+
+  display: block;
+
+  background: #fff8df;
+
+  color: #8a6800;
+}
+
+.status-success {
+
+  display: block;
+
+  background: #e7f8ed;
+
+  color: #15733a;
+}
+
+.status-failed {
+
+  display: block;
+
+  background: #fdeaea;
+
+  color: #b02020;
+}
+
+.payment-link {
+
+  display: none;
+
+  margin-top: 15px;
+
+  text-align: center;
+}
+
+.payment-link a {
+
+  display: inline-block;
+
+  padding: 12px 18px;
+
+  border-radius: 8px;
+
+  background: #ff7900;
+
+  color: white;
+
+  text-decoration: none;
+
+  font-weight: bold;
+}
+
+.small {
+
+  margin-top: 12px;
+
+  text-align: center;
+
+  color: #777;
+
+  font-size: 12px;
+}
+
+</style>
+
 </head>
 
 <body>
 
-<div class="container">
+<div class="box">
 
-  <div class="card">
+  <img
+    src="logo.png"
+    class="logo"
+    alt="Logo"
+  >
 
-    <div class="logo">
-      <strong>Paiement sécurisé</strong>
-    </div>
+  <h1>
+    Paiement Mobile Money
+  </h1>
 
-    <div class="subtitle">
-      Choisissez votre service et votre réseau
-      de paiement.
-    </div>
+  <!-- SERVICE -->
 
-    <!-- SERVICE -->
-    <div class="field">
+  <label for="service">
+    Service
+  </label>
 
-      <label for="service">
-        Service
-      </label>
+  <select id="service">
 
-      <select id="service">
+    <option value="biometrie">
+      Données biométriques — 1 USD
+    </option>
 
-        <option value="">
-          Sélectionner un service
-        </option>
+    <option value="langue">
+      Test de langue — 150 USD
+    </option>
 
-        <option value="biometrie">
-          Biométrie — 1 USD
-        </option>
+    <option value="administratif">
+      Frais administratifs — 220 USD
+    </option>
 
-        <option value="langue">
-          Test de langue — 150 USD
-        </option>
+    <option value="total">
+      Paiement total — 520 USD
+    </option>
 
-        <option value="administratif">
-          Frais administratifs — 220 USD
-        </option>
+  </select>
 
-      </select>
 
-    </div>
+  <!-- PAYS -->
 
-    <!-- PAYS -->
-    <div class="field">
+  <label for="country">
+    Pays
+  </label>
 
-      <label for="country">
-        Pays
-      </label>
+  <select id="country">
 
-      <select id="country">
+    <option value="BEN">
+      Bénin
+    </option>
 
-        <option value="">
-          Sélectionner un pays
-        </option>
+    <option value="CIV">
+      Côte d'Ivoire
+    </option>
 
-        <option value="BEN">
-          🇧🇯 Bénin
-        </option>
+    <option value="BF">
+      Burkina Faso
+    </option>
 
-        <option value="TGO">
-          🇹🇬 Togo
-        </option>
+    <option value="COG">
+      Congo-Brazzaville
+    </option>
 
-        <option value="CIV">
-          🇨🇮 Côte d'Ivoire
-        </option>
+    <option value="SEN">
+      Sénégal
+    </option>
 
-        <option value="CG">
-          🇨🇬 Congo Brazzaville
-        </option>
+    <option value="TGO">
+      Togo
+    </option>
 
-        <option value="SEN">
-          🇸🇳 Sénégal
-        </option>
+    <option value="MLI">
+      Mali
+    </option>
 
-        <option value="BF">
-          🇧🇫 Burkina Faso
-        </option>
+  </select>
 
-        <option value="MLI">
-          🇲🇱 Mali
-        </option>
 
-      </select>
+  <!-- RESEAU -->
 
-    </div>
+  <label for="operator">
+    Réseau Mobile Money
+  </label>
 
-    <!-- RÉSEAU -->
-    <div class="field">
+  <select id="operator"></select>
 
-      <label for="operator">
-        Réseau
-      </label>
 
-      <select id="operator">
+  <!-- TELEPHONE -->
 
-        <option value="">
-          Sélectionner un réseau
-        </option>
+  <label for="phone">
+    Numéro Mobile Money
+  </label>
 
-      </select>
+  <div class="phone-row">
 
-    </div>
-
-    <!-- TÉLÉPHONE -->
-    <div class="field">
-
-      <label for="phone">
-        Numéro de téléphone
-      </label>
-
-      <div class="phone-row">
-
-        <input
-          id="prefix"
-          class="prefix"
-          type="text"
-          value="+229"
-          readonly
-        >
-
-        <input
-          id="phone"
-          type="tel"
-          inputmode="numeric"
-          autocomplete="tel"
-          placeholder="01XXXXXXXX"
-        >
-
-      </div>
-
-    </div>
-
-    <!-- OTP -->
-    <div
-      id="otpBox"
-      class="otp-box"
+    <input
+      type="text"
+      id="prefix"
+      class="prefix"
+      readonly
     >
 
-      <div class="otp-info">
-        <strong>Orange Burkina Faso</strong><br>
-        Composez d'abord
-        <strong>#144*4*6*montant#</strong>
-        depuis votre téléphone Orange BF.
-        Ensuite, saisissez ici le code OTP reçu.
-      </div>
-
-      <label for="otp">
-        Code OTP
-      </label>
-
-      <input
-        id="otp"
-        type="text"
-        inputmode="numeric"
-        maxlength="8"
-        placeholder="Entrez votre OTP"
-      >
-
-    </div>
-
-    <!-- MONTANT -->
-    <div class="amount-box">
-
-      <div class="amount-line">
-
-        <span class="amount-label">
-          Montant à payer
-        </span>
-
-        <span
-          id="amount"
-          class="amount-value"
-        >
-          —
-        </span>
-
-      </div>
-
-    </div>
-
-    <!-- BOUTON -->
-    <button
-      id="payButton"
-      type="button"
-    >
-      Payer maintenant
-    </button>
-
-    <!-- RÉSULTAT -->
-    <div
-      id="result"
-      class="result"
+    <input
+      type="tel"
+      id="phone"
+      class="phone"
+      placeholder="Exemple : 771740000"
+      autocomplete="tel"
     >
 
-      <div
-        id="resultTitle"
-        class="result-title"
-      ></div>
+  </div>
 
-      <div
-        id="resultMessage"
-        class="result-message"
-      ></div>
 
-      <div
-        id="reference"
-        class="reference"
-      ></div>
+  <!-- MONTANT -->
 
-      <a
-        id="paymentLink"
-        class="payment-link"
-        href="#"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Continuer le paiement
-      </a>
+  <div
+    id="displayAmount"
+    class="amount"
+  >
+    Montant à payer
+  </div>
 
-    </div>
 
-    <div class="small">
-      Paiement traité par FeexPay.
-    </div>
+  <!-- BOUTON -->
 
+  <button
+    id="payButton"
+    type="button"
+  >
+    Payer maintenant
+  </button>
+
+
+  <!-- RESULTAT -->
+
+  <p id="result"></p>
+
+
+  <!-- STATUT -->
+
+  <div
+    id="statusBox"
+    class="status-box"
+  ></div>
+
+
+  <!-- LIEN PAYMENT URL -->
+
+  <div
+    id="paymentLink"
+    class="payment-link"
+  >
+
+    <a
+      id="paymentLinkButton"
+      href="#"
+      target="_blank"
+      rel="noopener"
+    >
+      Ouvrir le paiement
+    </a>
+
+  </div>
+
+
+  <div class="small">
+    Le paiement est sécurisé par FeexPay.
   </div>
 
 </div>
 
+
 <script>
-"use strict";
 
-// ----------------------------------------------------
-// CONFIGURATION
-// ----------------------------------------------------
+/* =========================================================
+   ELEMENTS
+========================================================= */
 
-const SERVICES = {
-  biometrie: {
-    name: "Biométrie",
-    usd: 1
-  },
+const service =
+  document.getElementById(
+    "service"
+  );
 
-  langue: {
-    name: "Test de langue",
-    usd: 150
-  },
+const country =
+  document.getElementById(
+    "country"
+  );
 
-  administratif: {
-    name: "Frais administratifs",
-    usd: 220
-  }
-};
+const operator =
+  document.getElementById(
+    "operator"
+  );
 
-const RATES = {
-  XOF: 550,
-  XAF: 550
-};
+const prefix =
+  document.getElementById(
+    "prefix"
+  );
 
-const NETWORKS = {
-  BEN: {
-    country: "Bénin",
-    currency: "XOF",
-    prefix: "229",
+const phone =
+  document.getElementById(
+    "phone"
+  );
 
-    operators: {
-      mtn: {
-        name: "MTN Bénin",
-        length: 10,
-        example: "0166000000",
-        otp: false
-      },
-
-      moov: {
-        name: "Moov Bénin",
-        length: 10,
-        example: "0163000000",
-        otp: false
-      },
-
-      celtiis_bj: {
-        name: "Celtiis Bénin",
-        length: 10,
-        example: "0140000000",
-        otp: false
-      },
-
-      coris: {
-        name: "Coris Bénin",
-        length: 10,
-        example: "01XXXXXXXX",
-        otp: false
-      }
-    }
-  },
-
-  TGO: {
-    country: "Togo",
-    currency: "XOF",
-    prefix: "228",
-
-    operators: {
-      togocom_tg: {
-        name: "Togocom",
-        length: 8,
-        example: "66000000",
-        otp: false
-      },
-
-      moov_tg: {
-        name: "Moov Togo",
-        length: 8,
-        example: "90000000",
-        otp: false
-      }
-    }
-  },
-
-  CIV: {
-    country: "Côte d'Ivoire",
-    currency: "XOF",
-    prefix: "225",
-
-    operators: {
-      mtn_ci: {
-        name: "MTN Côte d'Ivoire",
-        length: 10,
-        example: "6766000000",
-        otp: false
-      },
-
-      moov_ci: {
-        name: "Moov Côte d'Ivoire",
-        length: 10,
-        example: "XXXXXXXXXX",
-        otp: false
-      },
-
-      wave_ci: {
-        name: "Wave Côte d'Ivoire",
-        length: 10,
-        example: "XXXXXXXXXX",
-        otp: false
-      },
-
-      orange_ci: {
-        name: "Orange Money Côte d'Ivoire",
-        length: 10,
-        example: "0556786596",
-        otp: false
-      }
-    }
-  },
-
-  CG: {
-    country: "Congo Brazzaville",
-    currency: "XAF",
-    prefix: "242",
-
-    operators: {
-      mtn_cg: {
-        name: "MTN Congo",
-        length: 12,
-        example: "676600000000",
-        otp: false
-      }
-    }
-  },
-
-  SEN: {
-    country: "Sénégal",
-    currency: "XOF",
-    prefix: "221",
-
-    operators: {
-      orange_sn: {
-        name: "Orange Sénégal",
-        length: 9,
-        example: "771740000",
-        otp: false
-      },
-
-      wave_sn: {
-        name: "Wave Sénégal",
-        length: 9,
-        example: "771740000",
-        otp: false
-      },
-
-      free_sn: {
-        name: "Free Money Sénégal",
-        length: 9,
-        example: "771740000",
-        otp: false
-      }
-    }
-  },
-
-  BF: {
-    country: "Burkina Faso",
-    currency: "XOF",
-    prefix: "226",
-
-    operators: {
-      moov_bf: {
-        name: "Moov Burkina Faso",
-        length: 8,
-        example: "70000000",
-        otp: false
-      },
-
-      orange_bf: {
-        name: "Orange Burkina Faso",
-        length: 8,
-        example: "70000000",
-        otp: true
-      },
-
-      wave_bf: {
-        name: "Wave Burkina Faso",
-        length: 8,
-        example: "70000000",
-        otp: false
-      }
-    }
-  },
-
-  MLI: {
-    country: "Mali",
-    currency: "XOF",
-    prefix: "223",
-
-    operators: {
-      orange_ml: {
-        name: "Orange Mali",
-        length: 8,
-        example: "70000000",
-        otp: false
-      },
-
-      moov_ml: {
-        name: "Moov Mali",
-        length: 8,
-        example: "70000000",
-        otp: false
-      }
-    }
-  }
-};
-
-// ----------------------------------------------------
-// ELEMENTS
-// ----------------------------------------------------
-
-const serviceEl =
-  document.getElementById("service");
-
-const countryEl =
-  document.getElementById("country");
-
-const operatorEl =
-  document.getElementById("operator");
-
-const prefixEl =
-  document.getElementById("prefix");
-
-const phoneEl =
-  document.getElementById("phone");
-
-const otpBox =
-  document.getElementById("otpBox");
-
-const otpEl =
-  document.getElementById("otp");
-
-const amountEl =
-  document.getElementById("amount");
+const displayAmount =
+  document.getElementById(
+    "displayAmount"
+  );
 
 const payButton =
-  document.getElementById("payButton");
+  document.getElementById(
+    "payButton"
+  );
 
-const resultEl =
-  document.getElementById("result");
+const result =
+  document.getElementById(
+    "result"
+  );
 
-const resultTitleEl =
-  document.getElementById("resultTitle");
+const statusBox =
+  document.getElementById(
+    "statusBox"
+  );
 
-const resultMessageEl =
-  document.getElementById("resultMessage");
+const paymentLink =
+  document.getElementById(
+    "paymentLink"
+  );
 
-const referenceEl =
-  document.getElementById("reference");
+const paymentLinkButton =
+  document.getElementById(
+    "paymentLinkButton"
+  );
 
-const paymentLinkEl =
-  document.getElementById("paymentLink");
 
-// ----------------------------------------------------
-// SERVICES
-// ----------------------------------------------------
+/* =========================================================
+   CONFIGURATION
+========================================================= */
 
-function updateAmount() {
+const countries = {
 
-  const service =
-    SERVICES[serviceEl.value];
+  BEN: {
 
-  const country =
-    NETWORKS[countryEl.value];
+    name: "Bénin",
 
-  if (!service || !country) {
-    amountEl.textContent = "—";
-    return;
+    prefix: "229",
+
+    currency: "XOF",
+
+    rate: 550,
+
+    networks: [
+
+      {
+        value: "mtn",
+        label: "MTN Bénin"
+      },
+
+      {
+        value: "moov",
+        label: "Moov Bénin"
+      },
+
+      {
+        value: "celtiis",
+        label: "Celtiis Bénin"
+      }
+
+    ]
+  },
+
+
+  CIV: {
+
+    name: "Côte d'Ivoire",
+
+    prefix: "225",
+
+    currency: "XOF",
+
+    rate: 550,
+
+    networks: [
+
+      {
+        value: "mtn",
+        label: "MTN Côte d'Ivoire"
+      },
+
+      {
+        value: "moov",
+        label: "Moov Côte d'Ivoire"
+      },
+
+      {
+        value: "orange",
+        label: "Orange Côte d'Ivoire"
+      },
+
+      {
+        value: "wave",
+        label: "Wave Côte d'Ivoire"
+      }
+
+    ]
+  },
+
+
+  BF: {
+
+    name: "Burkina Faso",
+
+    prefix: "226",
+
+    currency: "XOF",
+
+    rate: 550,
+
+    networks: [
+
+      {
+        value: "moov",
+        label: "Moov Burkina Faso"
+      },
+
+      {
+        value: "orange",
+        label: "Orange Burkina Faso"
+      }
+
+    ]
+  },
+
+
+  COG: {
+
+    name: "Congo-Brazzaville",
+
+    prefix: "242",
+
+    currency: "XAF",
+
+    rate: 550,
+
+    networks: [
+
+      {
+        value: "mtn",
+        label: "MTN Congo"
+      }
+
+    ]
+  },
+
+
+  SEN: {
+
+    name: "Sénégal",
+
+    prefix: "221",
+
+    currency: "XOF",
+
+    rate: 550,
+
+    networks: [
+
+      {
+        value: "orange",
+        label: "Orange Sénégal"
+      },
+
+      {
+        value: "wave",
+        label: "Wave Sénégal"
+      },
+
+      {
+        value: "free",
+        label: "Free Sénégal"
+      }
+
+    ]
+  },
+
+
+  TGO: {
+
+    name: "Togo",
+
+    prefix: "228",
+
+    currency: "XOF",
+
+    rate: 550,
+
+    networks: [
+
+      {
+        value: "togocom",
+        label: "Togocom"
+      },
+
+      {
+        value: "moov",
+        label: "Moov Togo"
+      }
+
+    ]
+  },
+
+
+  MLI: {
+
+    name: "Mali",
+
+    prefix: "223",
+
+    currency: "XOF",
+
+    rate: 550,
+
+    networks: [
+
+      {
+        value: "orange",
+        label: "Orange Mali"
+      },
+
+      {
+        value: "moov",
+        label: "Moov Mali"
+      }
+
+    ]
   }
 
-  const rate =
-    RATES[country.currency];
+};
 
-  const amount =
-    Math.round(
-      service.usd * rate
-    );
 
-  amountEl.textContent =
-    `${amount.toLocaleString("fr-FR")} ${country.currency}`;
-}
+/* =========================================================
+   SERVICES
+========================================================= */
 
-// ----------------------------------------------------
-// PAYS
-// ----------------------------------------------------
+const services = {
+
+  biometrie: 1,
+
+  langue: 150,
+
+  administratif: 220,
+
+  total: 520
+
+};
+
+
+/* =========================================================
+   VARIABLES
+========================================================= */
+
+let paymentInProgress =
+  false;
+
+let statusTimer =
+  null;
+
+
+/* =========================================================
+   CHANGEMENT DE PAYS
+========================================================= */
 
 function updateCountry() {
 
-  const country =
-    NETWORKS[countryEl.value];
+  const selected =
+    country.value;
 
-  operatorEl.innerHTML = "";
+  const data =
+    countries[selected];
 
-  const firstOption =
-    document.createElement("option");
+  operator.innerHTML = "";
 
-  firstOption.value = "";
-  firstOption.textContent =
-    "Sélectionner un réseau";
+  if (!data) {
 
-  operatorEl.appendChild(
-    firstOption
-  );
+    prefix.value = "";
 
-  prefixEl.value =
-    country
-      ? `+${country.prefix}`
-      : "+229";
-
-  if (!country) {
-    phoneEl.placeholder =
-      "Numéro de téléphone";
-
-    updateAmount();
     return;
   }
 
-  Object.entries(
-    country.operators
-  ).forEach(
-    ([id, operator]) => {
+  prefix.value =
+    "+" + data.prefix;
+
+  data.networks.forEach(
+    function(net) {
 
       const option =
-        document.createElement("option");
+        document.createElement(
+          "option"
+        );
 
-      option.value = id;
+      option.value =
+        net.value;
+
       option.textContent =
-        operator.name;
+        net.label;
 
-      operatorEl.appendChild(
+      operator.appendChild(
         option
       );
     }
   );
 
-  const firstOperator =
-    Object.values(
-      country.operators
-    )[0];
-
-  phoneEl.placeholder =
-    firstOperator
-      ? firstOperator.example
-      : "Numéro";
-
-  phoneEl.value = "";
-
-  otpBox.classList.remove("visible");
-  otpEl.value = "";
-
   updateAmount();
 }
 
-// ----------------------------------------------------
-// RÉSEAU
-// ----------------------------------------------------
 
-function updateOperator() {
+/* =========================================================
+   CALCUL MONTANT
+========================================================= */
 
-  const country =
-    NETWORKS[countryEl.value];
+function updateAmount() {
 
-  const operator =
-    country?.operators[
-      operatorEl.value
+  const selectedService =
+    service.value;
+
+  const usd =
+    services[
+      selectedService
     ];
 
-  if (!operator) {
-    otpBox.classList.remove(
-      "visible"
-    );
+  const data =
+    countries[
+      country.value
+    ];
 
+  if (!usd || !data) {
     return;
   }
 
-  phoneEl.placeholder =
-    operator.example;
+  const amount =
+    Math.round(
+      usd * data.rate
+    );
 
-  otpBox.classList.toggle(
-    "visible",
-    Boolean(operator.otp)
-  );
-
-  if (!operator.otp) {
-    otpEl.value = "";
-  }
+  displayAmount.textContent =
+    "Montant à payer : " +
+    amount.toLocaleString(
+      "fr-FR"
+    ) +
+    " " +
+    data.currency;
 }
 
-// ----------------------------------------------------
-// NORMALISATION FRONTEND
-// ----------------------------------------------------
+
+/* =========================================================
+   TELEPHONE
+========================================================= */
 
 function getPhoneNumber() {
 
-  const country =
-    NETWORKS[countryEl.value];
+  let number =
+    phone.value
+      .trim()
+      .replace(/\s+/g, "")
+      .replace(/-/g, "")
+      .replace(/^\+/, "");
 
-  const operator =
-    country?.operators[
-      operatorEl.value
+  if (!number) {
+    return null;
+  }
+
+  const data =
+    countries[
+      country.value
     ];
 
-  if (!country || !operator) {
-    throw new Error(
-      "Sélectionnez le pays et le réseau."
-    );
+  if (!data) {
+    return null;
   }
 
-  let digits =
-    phoneEl.value.replace(
-      /\D/g,
-      ""
-    );
+  const prefixNumber =
+    data.prefix;
 
-  if (!digits) {
-    throw new Error(
-      "Veuillez saisir votre numéro."
-    );
-  }
+  /*
+   * Si le client a déjà mis
+   * l'indicatif international.
+   */
 
-  // Déjà international
   if (
-    digits.startsWith(
-      country.prefix
+    number.startsWith(
+      prefixNumber
     )
   ) {
 
-    const national =
-      digits.slice(
-        country.prefix.length
+    number =
+      number.substring(
+        prefixNumber.length
       );
-
-    if (
-      national.length !==
-      operator.length
-    ) {
-      throw new Error(
-        `Le numéro doit contenir ${operator.length} chiffres après le préfixe ${country.prefix}.`
-      );
-    }
-
-    return digits;
   }
 
-  // Numéro local
+  /*
+   * Retirer un éventuel zéro
+   * national au début.
+   */
+
   if (
-    digits.length !==
-    operator.length
+    number.startsWith("0")
   ) {
-    throw new Error(
-      `Veuillez saisir ${operator.length} chiffres.`
-    );
+
+    number =
+      number.substring(1);
   }
 
-  // Bénin : conserver 01
   if (
-    countryEl.value === "BEN" &&
-    !digits.startsWith("01")
+    !/^\d+$/.test(number)
   ) {
-    throw new Error(
-      "Au Bénin, le numéro doit commencer par 01."
-    );
+
+    return null;
   }
 
-  return country.prefix + digits;
-}
+  if (
+    number.length < 8 ||
+    number.length > 10
+  ) {
 
-// ----------------------------------------------------
-// AFFICHAGE RÉSULTAT
-// ----------------------------------------------------
-
-function showResult(
-  type,
-  title,
-  message,
-  reference = ""
-) {
-
-  resultEl.className =
-    `result visible ${type}`;
-
-  resultTitleEl.textContent =
-    title;
-
-  resultMessageEl.textContent =
-    message;
-
-  referenceEl.textContent =
-    reference
-      ? `Référence : ${reference}`
-      : "";
-}
-
-// ----------------------------------------------------
-// PAYMENT URL
-// ----------------------------------------------------
-
-function showPaymentLink(url) {
-
-  if (!url) {
-    paymentLinkEl.classList.remove(
-      "visible"
-    );
-
-    paymentLinkEl.href = "#";
-
-    return;
+    return null;
   }
 
-  paymentLinkEl.href = url;
-
-  paymentLinkEl.classList.add(
-    "visible"
+  return (
+    prefixNumber +
+    number
   );
 }
 
-// ----------------------------------------------------
-// BOUTON CHARGEMENT
-// ----------------------------------------------------
 
-function setLoading(loading) {
+/* =========================================================
+   RESET AFFICHAGE
+========================================================= */
 
-  payButton.disabled =
-    loading;
+function resetStatus() {
 
-  if (loading) {
-
-    payButton.innerHTML =
-      `<span class="spinner"></span>
-       Traitement en cours...`;
-
-  } else {
-
-    payButton.textContent =
-      "Payer maintenant";
-  }
-}
-
-// ----------------------------------------------------
-// VÉRIFICATION DU STATUT
-// ----------------------------------------------------
-
-let pollingTimer = null;
-
-function stopPolling() {
-
-  if (pollingTimer) {
+  if (statusTimer) {
 
     clearInterval(
-      pollingTimer
+      statusTimer
     );
 
-    pollingTimer = null;
+    statusTimer =
+      null;
   }
+
+  statusBox.className =
+    "status-box";
+
+  statusBox.textContent =
+    "";
+
+  paymentLink.style.display =
+    "none";
 }
+
+
+/* =========================================================
+   AFFICHAGE STATUT
+========================================================= */
+
+function showStatus(
+  status,
+  message
+) {
+
+  const value =
+    String(
+      status || ""
+    ).toUpperCase();
+
+  statusBox.className =
+    "status-box";
+
+  if (
+    value ===
+      "SUCCESSFUL" ||
+    value ===
+      "SUCCESS"
+  ) {
+
+    statusBox.classList.add(
+      "status-success"
+    );
+
+    statusBox.textContent =
+      "✓ Paiement confirmé.";
+
+    result.style.color =
+      "green";
+
+    result.textContent =
+      "Votre paiement a été confirmé avec succès.";
+
+    return "SUCCESS";
+
+  }
+
+
+  if (
+    value === "FAILED" ||
+    value === "FAILURE" ||
+    value === "CANCELLED"
+  ) {
+
+    statusBox.classList.add(
+      "status-failed"
+    );
+
+    statusBox.textContent =
+      "✕ Paiement échoué ou annulé.";
+
+    result.style.color =
+      "red";
+
+    result.textContent =
+      message ||
+      "Le paiement n'a pas été confirmé.";
+
+    return "FAILED";
+
+  }
+
+
+  statusBox.classList.add(
+    "status-pending"
+  );
+
+  statusBox.textContent =
+    "⏳ Paiement en attente de confirmation...";
+
+  result.style.color =
+    "#8a6800";
+
+  result.textContent =
+    "Veuillez confirmer le paiement sur votre téléphone.";
+
+  return "PENDING";
+}
+
+
+/* =========================================================
+   VERIFICATION DU STATUT
+========================================================= */
 
 async function checkPaymentStatus(
   reference
 ) {
 
-  if (!reference) return;
+  if (!reference) {
+    return;
+  }
 
   try {
 
     const response =
       await fetch(
-        `/api/payment-status/${encodeURIComponent(reference)}`
+        "/api/payment-status/" +
+        encodeURIComponent(
+          reference
+        )
       );
 
     const data =
       await response.json();
 
-    if (!data.success) {
-      return;
-    }
+    if (!response.ok) {
 
-    const status =
-      String(
-        data.status || "PENDING"
-      ).toUpperCase();
-
-    if (
-      [
-        "SUCCESS",
-        "SUCCESSFUL"
-      ].includes(status)
-    ) {
-
-      stopPolling();
-
-      showResult(
-        "success",
-        "Paiement réussi",
-        data.message ||
-          "Votre paiement a été confirmé.",
-        reference
+      console.error(
+        "Erreur statut :",
+        data
       );
 
       return;
     }
 
-    if (
-      [
-        "FAILED",
-        "FAILURE",
-        "CANCELLED",
-        "CANCELED",
-        "REJECTED",
-        "ERROR"
-      ].includes(status)
-    ) {
-
-      stopPolling();
-
-      showResult(
-        "failed",
-        "Paiement échoué",
-        data.message ||
-          "Le paiement n'a pas été confirmé.",
-        reference
+    const finalStatus =
+      showStatus(
+        data.status,
+        data.message
       );
 
-      return;
-    }
+    /*
+     * Paiement terminé :
+     * on arrête le polling.
+     */
 
-    showResult(
-      "pending",
-      "Paiement en attente",
-      data.message ||
-        "Nous attendons la confirmation du paiement.",
-      reference
-    );
+    if (
+      finalStatus ===
+        "SUCCESS" ||
+      finalStatus ===
+        "FAILED"
+    ) {
+
+      if (statusTimer) {
+
+        clearInterval(
+          statusTimer
+        );
+
+        statusTimer =
+          null;
+      }
+
+      payButton.disabled =
+        false;
+
+      payButton.textContent =
+        "Payer maintenant";
+    }
 
   } catch (error) {
 
     console.error(
-      "Erreur statut :",
+      "Erreur vérification statut :",
       error
     );
   }
 }
 
-function startPolling(
+
+/* =========================================================
+   DEMARRER LE SUIVI
+========================================================= */
+
+function startStatusPolling(
   reference
 ) {
 
-  stopPolling();
+  if (!reference) {
+    return;
+  }
 
-  let elapsed = 0;
+  /*
+   * Première vérification immédiate.
+   */
 
-  // Première vérification après 2 secondes
-  setTimeout(
-    () => {
-      checkPaymentStatus(
-        reference
-      );
-    },
-    2000
+  checkPaymentStatus(
+    reference
   );
 
-  pollingTimer =
-    setInterval(
-      () => {
+  /*
+   * Puis toutes les 3 secondes.
+   */
 
-        elapsed += 5000;
+  statusTimer =
+    setInterval(
+      function() {
 
         checkPaymentStatus(
           reference
         );
 
-        // Arrêt après 10 minutes
-        if (
-          elapsed >=
-          10 * 60 * 1000
-        ) {
-
-          stopPolling();
-
-          showResult(
-            "pending",
-            "Confirmation toujours en attente",
-            "La transaction est toujours en cours. Vous pouvez consulter votre opérateur ou réessayer plus tard.",
-            reference
-          );
-        }
-
       },
-      5000
+      3000
     );
+
 }
 
-// ----------------------------------------------------
-// PAIEMENT
-// ----------------------------------------------------
 
-async function pay() {
+/* =========================================================
+   PAIEMENT
+========================================================= */
 
-  stopPolling();
+async function payer() {
 
-  showPaymentLink(null);
+  if (
+    paymentInProgress
+  ) {
+    return;
+  }
 
-  resultEl.className =
-    "result";
+  resetStatus();
 
-  const service =
-    serviceEl.value;
+  const phoneNumber =
+    getPhoneNumber();
 
-  const country =
-    countryEl.value;
+  if (!phoneNumber) {
 
-  const operator =
-    operatorEl.value;
+    result.style.color =
+      "red";
 
-  if (!service) {
-
-    showResult(
-      "failed",
-      "Information manquante",
-      "Veuillez sélectionner le service."
-    );
+    result.textContent =
+      "Veuillez entrer un numéro de téléphone valide.";
 
     return;
   }
 
-  if (!country) {
+  const selectedCountry =
+    country.value;
 
-    showResult(
-      "failed",
-      "Information manquante",
-      "Veuillez sélectionner votre pays."
-    );
+  const selectedOperator =
+    operator.value;
 
-    return;
-  }
+  const selectedService =
+    service.value;
 
-  if (!operator) {
+  if (!selectedOperator) {
 
-    showResult(
-      "failed",
-      "Information manquante",
-      "Veuillez sélectionner votre réseau de paiement."
-    );
+    result.style.color =
+      "red";
+
+    result.textContent =
+      "Veuillez sélectionner votre réseau.";
 
     return;
   }
 
-  let phone;
+  if (
+    !services[
+      selectedService
+    ]
+  ) {
+
+    result.style.color =
+      "red";
+
+    result.textContent =
+      "Service de paiement invalide.";
+
+    return;
+  }
+
+  paymentInProgress =
+    true;
+
+  payButton.disabled =
+    true;
+
+  payButton.textContent =
+    "Traitement en cours...";
+
+  result.style.color =
+    "#333";
+
+  result.textContent =
+    "Connexion au serveur de paiement...";
 
   try {
-
-    phone =
-      getPhoneNumber();
-
-  } catch (error) {
-
-    showResult(
-      "failed",
-      "Numéro invalide",
-      error.message
-    );
-
-    return;
-  }
-
-  const network =
-    NETWORKS[country];
-
-  const operatorConfig =
-    network.operators[
-      operator
-    ];
-
-  // OTP
-  if (operatorConfig.otp) {
-
-    const otp =
-      otpEl.value.replace(
-        /\D/g,
-        ""
-      );
-
-    if (
-      !/^\d{4,8}$/.test(otp)
-    ) {
-
-      showResult(
-        "failed",
-        "OTP requis",
-        "Veuillez saisir le code OTP reçu."
-      );
-
-      return;
-    }
-  }
-
-  setLoading(true);
-
-  try {
-
-    const body = {
-      phone,
-      service,
-      country,
-      operator
-    };
-
-    if (operatorConfig.otp) {
-      body.otp =
-        otpEl.value.replace(
-          /\D/g,
-          ""
-        );
-    }
 
     const response =
       await fetch(
         "/api/pay",
         {
+
           method: "POST",
 
           headers: {
@@ -1383,165 +1268,172 @@ async function pay() {
           },
 
           body:
-            JSON.stringify(body)
+            JSON.stringify({
+
+              phone:
+                phoneNumber,
+
+              service:
+                selectedService,
+
+              country:
+                selectedCountry,
+
+              operator:
+                selectedOperator
+            })
         }
       );
 
     const data =
       await response.json();
 
-    setLoading(false);
+    if (!response.ok) {
 
-    if (!data.success) {
-
-      showResult(
-        "failed",
-        "Paiement refusé",
+      throw new Error(
+        data.error ||
         data.message ||
-          "La demande de paiement a échoué.",
-        data.reference || ""
+        "Le serveur a refusé la demande."
       );
-
-      return;
     }
 
-    const status =
-      String(
-        data.status ||
-        "PENDING"
-      ).toUpperCase();
+    /*
+     * FeexPay peut retourner
+     * un payment_url pour certains réseaux.
+     */
 
-    // Paiement déjà réussi
     if (
-      [
-        "SUCCESS",
-        "SUCCESSFUL"
-      ].includes(status)
+      data.payment_url
     ) {
 
-      showResult(
-        "success",
-        "Paiement réussi",
-        data.message ||
-          "Votre paiement a été confirmé.",
-        data.reference || ""
-      );
+      paymentLink.style.display =
+        "block";
 
-      return;
+      paymentLinkButton.href =
+        data.payment_url;
     }
 
-    // Paiement échoué directement
+    /*
+     * Demande acceptée.
+     */
+
     if (
-      [
-        "FAILED",
-        "FAILURE",
-        "CANCELLED",
-        "CANCELED",
-        "REJECTED"
-      ].includes(status)
+      data.status ===
+        "PENDING" ||
+      data.status ===
+        "ACCEPTED"
     ) {
 
-      showResult(
-        "failed",
-        "Paiement échoué",
-        data.message ||
-          "L'opérateur a refusé la transaction.",
-        data.reference || ""
+      result.style.color =
+        "#8a6800";
+
+      result.textContent =
+        "Demande de paiement envoyée. Vérifiez votre téléphone et confirmez le paiement.";
+
+      showStatus(
+        "PENDING",
+        data.message
       );
 
-      return;
-    }
+      /*
+       * Commencer la confirmation
+       * automatique.
+       */
 
-    // URL de paiement
-    if (data.payment_url) {
+      if (
+        data.reference
+      ) {
 
-      showPaymentLink(
-        data.payment_url
-      );
-
-      showResult(
-        "pending",
-        "Paiement à confirmer",
-        "Cliquez sur le bouton ci-dessous pour continuer le paiement.",
-        data.reference || ""
-      );
-
-      // Vérification en arrière-plan
-      if (data.reference) {
-
-        startPolling(
+        startStatusPolling(
           data.reference
         );
       }
 
-      return;
     }
 
-    // PENDING sans URL
-    showResult(
-      "pending",
-      "Paiement en attente",
-      data.message ||
-        "La demande a été envoyée. Nous attendons la confirmation de l'opérateur.",
-      data.reference || ""
-    );
+    else if (
+      data.status ===
+        "SUCCESSFUL" ||
+      data.status ===
+        "SUCCESS"
+    ) {
 
-    if (data.reference) {
+      showStatus(
+        data.status,
+        data.message
+      );
+    }
 
-      startPolling(
-        data.reference
+    else {
+
+      showStatus(
+        data.status,
+        data.message
       );
     }
 
   } catch (error) {
 
-    setLoading(false);
-
     console.error(
+      "Erreur paiement :",
       error
     );
 
-    showResult(
-      "failed",
-      "Erreur",
-      "Impossible de contacter le serveur de paiement."
-    );
+    result.style.color =
+      "red";
+
+    result.textContent =
+      "❌ " +
+      error.message;
+
+    payButton.disabled =
+      false;
+
   }
+
 }
 
-// ----------------------------------------------------
-// ÉVÉNEMENTS
-// ----------------------------------------------------
 
-serviceEl.addEventListener(
+/* =========================================================
+   EVENEMENTS
+========================================================= */
+
+country.addEventListener(
   "change",
-  updateAmount
+  function() {
+
+    updateCountry();
+
+  }
 );
 
-countryEl.addEventListener(
+
+service.addEventListener(
   "change",
-  updateCountry
+  function() {
+
+    updateAmount();
+
+  }
 );
 
-operatorEl.addEventListener(
-  "change",
-  updateOperator
-);
 
 payButton.addEventListener(
   "click",
-  pay
+  payer
 );
 
-// ----------------------------------------------------
-// INITIALISATION
-// ----------------------------------------------------
+
+/* =========================================================
+   INITIALISATION
+========================================================= */
 
 updateCountry();
-updateOperator();
+
 updateAmount();
 
 </script>
 
 </body>
+
 </html>
