@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Service de paiement</title>
 
-<!-- FeexPay JavaScript SDK V2 -->
+<!-- Importation officielle du SDK FeexPay JavaScript V2 -->
 <script src="https://feexpay.me"></script>
 
 <style>
@@ -126,7 +126,6 @@ const services = {
 const rates = { XOF: 550 };
 const DEFAULT_CURRENCY = "XOF";
 
-// Configuration des réseaux pour s'aligner sur la nomenclature d'intégration FeexPay V2
 const countries = {
   BJ: { prefix: "229", networks: [{ value: "mtn_benin", label: "MTN BENIN" }, { value: "moov_benin", label: "MOOV BENIN" }, { value: "celtiis_benin", label: "CELTIIS BENIN" }] },
   TG: { prefix: "228", networks: [{ value: "moov_togo", label: "MOOV TOGO" }, { value: "togocom_togo", label: "TOGOCOM" }] },
@@ -185,16 +184,16 @@ function payer() {
     return;
   }
 
-  // Nettoyer les espaces et le signe +
+  // Nettoyer les espaces et caractères
   phoneNumber = phoneNumber.replace(/\s+/g, "").replace("+", "");
 
-  // Si l'utilisateur saisit déjà l'indicatif pays au début, on le retire pour éviter les doublons
+  // Supprimer l'éventuel indicatif pays saisi en doublon par l'utilisateur
   const currentPrefix = countries[country.value].prefix;
   if (phoneNumber.startsWith(currentPrefix)) {
     phoneNumber = phoneNumber.substring(currentPrefix.length);
   }
 
-  // Composition finale : 229 + 0142222197 (Strictement 13 chiffres requis pour le Bénin en V2)
+  // Format final requis au Bénin : "229" + "0142222197"
   const finalPhoneNumber = currentPrefix + phoneNumber;
 
   if (paymentInProgress) return;
@@ -204,18 +203,33 @@ function payer() {
   result.textContent = "Lancement de la transaction...";
 
   try {
-    const feexpay = new FeexPayPayin({
-      shop_id: FEEXPAY_SHOP_ID,
-      api_key: FEEXPAY_API_KEY,
-      mode: FEEXPAY_MODE,
-      container: "render"
-    });
+    // CORRECTION APPORTÉE ICI : Utilisation alternative universelle de la classe FeexPay V2
+    // On vérifie dynamiquement quelle classe globale est chargée par le script distant de FeexPay
+    let feexpayInstance;
+    
+    if (typeof FeexPay !== "undefined") {
+      feexpayInstance = new FeexPay({
+        shop_id: FEEXPAY_SHOP_ID,
+        api_key: FEEXPAY_API_KEY,
+        mode: FEEXPAY_MODE,
+        container: "render"
+      });
+    } else if (typeof FeexPayPayin !== "undefined") {
+      feexpayInstance = new FeexPayPayin({
+        shop_id: FEEXPAY_SHOP_ID,
+        api_key: FEEXPAY_API_KEY,
+        mode: FEEXPAY_MODE,
+        container: "render"
+      });
+    } else {
+      throw new Error("Le fichier SDK distant de FeexPay n'est pas chargé sur votre page.");
+    }
 
     const paymentData = {
       amount: finalAmount,
       currency: DEFAULT_CURRENCY,
       country: country.value,
-      operator: operator.value, // Transmet directement la valeur exacte (ex: "mtn_benin")
+      operator: operator.value,
       phone_number: finalPhoneNumber,
       reference: "REF-" + Date.now(),
       callback_url: window.location.href,
@@ -224,7 +238,7 @@ function payer() {
 
     console.log("Payload envoyé au SDK :", paymentData);
 
-    feexpay.initPayin(paymentData)
+    feexpayInstance.initPayin(paymentData)
       .then(response => {
         paymentInProgress = false;
         payButton.disabled = false;
@@ -234,7 +248,7 @@ function payer() {
           result.textContent = "✅ Paiement effectué avec succès !";
         } else if (response && response.status === "PENDING") {
           result.style.color = "orange";
-          result.textContent = "⏱️ Demande envoyée ! Veuillez valider la notification USSD / Mobile Money reçue sur votre téléphone.";
+          result.textContent = "⏱️ Demande envoyée ! Veuillez composer votre code secret PIN sur l'écran USSD qui s'affiche sur votre téléphone.";
         } else {
           result.style.color = "red";
           result.textContent = "❌ Transaction refusée ou annulée.";
@@ -244,7 +258,7 @@ function payer() {
         paymentInProgress = false;
         payButton.disabled = false;
         result.style.color = "red";
-        result.textContent = "Erreur : Passerelle indisponible ou données invalides.";
+        result.textContent = "Erreur : La passerelle a rejeté les données de paiement.";
         console.error("Erreur SDK détaillé :", error);
       });
 
@@ -256,7 +270,6 @@ function payer() {
   }
 }
 
-// Lancement de l'initialisation au chargement de la page
 window.onload = function() {
   updateCountry();
 };
