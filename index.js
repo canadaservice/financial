@@ -84,8 +84,8 @@ db.serialize(() => {
 // =====================================================
 
 const services = {
-  biometrie: 150,
-  langue: 150,
+  biometrie: 1,
+  langue: 1,
   administratif: 220,
   total: 520
 };
