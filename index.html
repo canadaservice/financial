@@ -3,21 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Service de paiement</title>
 
 <style>
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
+
 body {
   font-family: Arial, sans-serif;
-  background: linear-gradient(rgba(0,0,0,0.60), rgba(0,0,0,0.60)), url("background.jpg") no-repeat center center;
+  background:
+    linear-gradient(rgba(0,0,0,0.60), rgba(0,0,0,0.60)),
+    url("background.jpg") no-repeat center center;
   background-size: cover;
+
   display: flex;
   justify-content: center;
   align-items: center;
+
   min-height: 100vh;
   margin: 0;
   padding: 20px;
 }
+
 .box {
   background: white;
   padding: 25px;
@@ -25,211 +34,886 @@ body {
   width: 100%;
   max-width: 400px;
   text-align: center;
+
   box-shadow: 0 8px 30px rgba(0,0,0,0.25);
 }
-.logo { width: 100px; max-width: 100%; margin-bottom: 10px; }
-.title { font-weight: bold; font-size: 20px; margin-bottom: 18px; }
-.subtitle { font-size: 13px; color: #666; margin-bottom: 15px; }
-input, select {
-  width: 100%; padding: 12px; margin-top: 10px; border-radius: 6px;
-  border: 1px solid #ccc; font-size: 15px; background: white;
+
+.logo {
+  width: 100px;
+  max-width: 100%;
+  margin-bottom: 10px;
 }
-input:focus, select:focus { outline: none; border-color: #00bcd4; }
-.row { display: flex; gap: 6px; }
-.prefix { width: 32%; background: #eee; text-align: center; }
-.phone { width: 68%; }
+
+.title {
+  font-weight: bold;
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 15px;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+
+  border-radius: 6px;
+  border: 1px solid #ccc;
+
+  font-size: 15px;
+  background: white;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: #00bcd4;
+}
+
+.row {
+  display: flex;
+  gap: 6px;
+}
+
+.prefix {
+  width: 32%;
+  background: #eee;
+  text-align: center;
+}
+
+.phone {
+  width: 68%;
+}
+
 .amount-box {
-  margin-top: 15px; padding: 12px; border-radius: 6px;
-  background: #f4f4f4; font-weight: bold; font-size: 16px;
+  margin-top: 15px;
+  padding: 12px;
+
+  border-radius: 6px;
+  background: #f4f4f4;
+
+  font-weight: bold;
+  font-size: 16px;
 }
+
 button {
-  width: 100%; padding: 14px; margin-top: 15px; background: #00bcd4;
-  color: white; border: none; border-radius: 6px; font-weight: bold;
-  font-size: 16px; cursor: pointer;
+  width: 100%;
+  padding: 14px;
+  margin-top: 15px;
+
+  background: #00bcd4;
+  color: white;
+
+  border: none;
+  border-radius: 6px;
+
+  font-weight: bold;
+  font-size: 16px;
+
+  cursor: pointer;
 }
-button:hover { opacity: 0.9; }
-button:disabled { opacity: 0.6; cursor: not-allowed; }
-#result { margin-top: 15px; font-weight: bold; font-size: 14px; line-height: 1.5; }
-.notice { margin-top: 12px; font-size: 11px; color: #777; line-height: 1.4; }
-.footer { position: fixed; bottom: 8px; width: 100%; text-align: center; color: white; font-size: 11px; padding: 0 10px; }
+
+button:hover {
+  opacity: 0.9;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+#result {
+  margin-top: 15px;
+  font-weight: bold;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.notice {
+  margin-top: 12px;
+  font-size: 11px;
+  color: #777;
+  line-height: 1.4;
+}
+
+.footer {
+  position: fixed;
+  bottom: 8px;
+
+  width: 100%;
+
+  text-align: center;
+  color: white;
+
+  font-size: 11px;
+  padding: 0 10px;
+}
 </style>
 </head>
+
 <body>
 
 <div class="box">
-  <img src="logo.png" class="logo" alt="Logo">
-  <div class="title">Service de paiement</div>
-  <div class="subtitle">Sélectionnez le service et votre moyen de paiement.</div>
+
+  <img
+    src="logo.png"
+    class="logo"
+    alt="Logo"
+  >
+
+  <div class="title">
+    Service de paiement
+  </div>
+
+  <div class="subtitle">
+    Sélectionnez le service et votre moyen de paiement.
+  </div>
+
 
   <!-- SERVICE -->
-  <select id="service" onchange="updateAmount()">
-    <option value="biometrie" data-usd="5">Données biométriques - 5 USD</option>
-    <option value="langue" data-usd="150">Test de langue - 150 USD</option>
-    <option value="administratif" data-usd="220">Droit administratif - 220 USD</option>
-    <option value="total" data-usd="455">Tout payer - 455 USD</option>
+
+  <select id="service">
+
+    <option value="biometrie">
+      Données biométriques - 150 USD
+    </option>
+
+    <option value="langue">
+      Test de langue - 150 USD
+    </option>
+
+    <option value="administratif">
+      Droit administratif - 220 USD
+    </option>
+
+    <option value="total">
+      Tout payer - 520 USD
+    </option>
+
   </select>
+
 
   <!-- PAYS -->
-  <select id="country" onchange="updateCountry()">
-    <option value="BJ">Bénin</option>
-    <option value="TG">Togo</option>
-    <option value="CI">Côte d'Ivoire</option>
+
+  <select id="country">
+
+    <option value="BEN">
+      Bénin
+    </option>
+
+    <option value="CIV">
+      Côte d'Ivoire
+    </option>
+
+    <option value="SEN">
+      Sénégal
+    </option>
+
+    <option value="CMR">
+      Cameroun
+    </option>
+
+    <option value="GAB">
+      Gabon
+    </option>
+
+    <option value="COG">
+      Congo
+    </option>
+
+    <option value="COD">
+      RDC
+    </option>
+
   </select>
 
+
   <!-- OPERATEUR -->
-  <select id="operator"></select>
+
+  <select id="operator">
+  </select>
+
 
   <!-- TELEPHONE -->
+
   <div class="row">
-    <input id="prefix" class="prefix" readonly>
-    <input id="phone" class="phone" type="tel" inputmode="numeric" placeholder="Ex: 0142222197" maxlength="12">
+
+    <input
+      id="prefix"
+      class="prefix"
+      readonly
+    >
+
+    <input
+      id="phone"
+      class="phone"
+      type="tel"
+      inputmode="numeric"
+      placeholder="Numéro de téléphone"
+      maxlength="15"
+    >
+
   </div>
+
 
   <!-- MONTANT -->
-  <div class="amount-box" id="displayAmount"></div>
+
+  <div
+    class="amount-box"
+    id="displayAmount"
+  >
+    Montant à payer
+  </div>
+
 
   <!-- BOUTON -->
-  <button id="payButton" onclick="payer()">Payer avec FeexPay</button>
 
-  <!-- MESSAGE -->
+  <button
+    id="payButton"
+    type="button"
+  >
+    Payer maintenant
+  </button>
+
+
+  <!-- RESULTAT -->
+
   <p id="result"></p>
 
+
   <div class="notice">
-    Le paiement est traité par FeexPay. Vérifiez attentivement les informations avant de confirmer.
+
+    Le paiement est traité de manière sécurisée.
+    Vérifiez attentivement votre numéro avant de confirmer.
+
   </div>
+
 </div>
 
-<div class="footer">© 2026 — Service de paiement sécurisé</div>
+
+<div class="footer">
+  © 2026 — Service de paiement sécurisé
+</div>
+
 
 <script>
-// Ajustez vos identifiants ici
-const FEEXPAY_SHOP_ID = "IYDzyrokhFsbjR6";
-const FEEXPAY_API_KEY = "fp_kduKiG5WH1aUurqtDWszbXNpjZgzOvKEd9263XCme8gfyIdOu5zJRV93N4IgLWbc";
+
+/* =====================================================
+   SERVICES
+===================================================== */
 
 const services = {
-  biometrie: { name: "Données biométriques", usd: 5 },
-  langue: { name: "Test de langue", usd: 150 },
-  administratif: { name: "Droit administratif", usd: 220 },
-  total: { name: "Tout payer", usd: 455 }
+
+  biometrie: {
+    name: "Données biométriques",
+    usd: 150
+  },
+
+  langue: {
+    name: "Test de langue",
+    usd: 150
+  },
+
+  administratif: {
+    name: "Droit administratif",
+    usd: 220
+  },
+
+  total: {
+    name: "Tout payer",
+    usd: 520
+  }
+
 };
 
-const rates = { XOF: 550 };
-const DEFAULT_CURRENCY = "XOF";
+
+/* =====================================================
+   PAYS
+===================================================== */
 
 const countries = {
-  BJ: { prefix: "229", networks: [{ value: "mtn", label: "MTN BENIN" }, { value: "moov", label: "MOOV BENIN" }, { value: "celtiis", label: "CELTIIS BENIN" }] },
-  TG: { prefix: "228", networks: [{ value: "moov", label: "MOOV TOGO" }, { value: "togocom", label: "TOGOCOM" }] },
-  CI: { prefix: "225", networks: [{ value: "mtn", label: "MTN CI" }, { value: "orange", label: "ORANGE CI" }] }
+
+  BEN: {
+    prefix: "229",
+
+    networks: [
+      {
+        value: "mtn",
+        label: "MTN BENIN"
+      },
+      {
+        value: "moov",
+        label: "MOOV BENIN"
+      },
+      {
+        value: "celtiis",
+        label: "CELTIIS BENIN"
+      }
+    ]
+  },
+
+  CIV: {
+    prefix: "225",
+
+    networks: [
+      {
+        value: "mtn",
+        label: "MTN CI"
+      },
+      {
+        value: "orange",
+        label: "ORANGE CI"
+      },
+      {
+        value: "moov",
+        label: "MOOV CI"
+      },
+      {
+        value: "wave",
+        label: "WAVE CI"
+      }
+    ]
+  },
+
+  SEN: {
+    prefix: "221",
+
+    networks: [
+      {
+        value: "orange",
+        label: "ORANGE SENEGAL"
+      },
+      {
+        value: "wave",
+        label: "WAVE SENEGAL"
+      },
+      {
+        value: "free",
+        label: "FREE SENEGAL"
+      }
+    ]
+  },
+
+  CMR: {
+    prefix: "237",
+
+    networks: [
+      {
+        value: "mtn",
+        label: "MTN CAMEROUN"
+      },
+      {
+        value: "orange",
+        label: "ORANGE CAMEROUN"
+      }
+    ]
+  },
+
+  GAB: {
+    prefix: "241",
+
+    networks: [
+      {
+        value: "airtel",
+        label: "AIRTEL GABON"
+      }
+    ]
+  },
+
+  COG: {
+    prefix: "242",
+
+    networks: [
+      {
+        value: "mtn",
+        label: "MTN CONGO"
+      }
+    ]
+  },
+
+  COD: {
+    prefix: "243",
+
+    networks: [
+      {
+        value: "vodacom",
+        label: "VODACOM RDC"
+      },
+      {
+        value: "orange",
+        label: "ORANGE RDC"
+      },
+      {
+        value: "airtel",
+        label: "AIRTEL RDC"
+      }
+    ]
+  }
+
 };
+
+
+/* =====================================================
+   TAUX D'AFFICHAGE
+   ===================================================== */
+
+const rates = {
+  XOF: 550,
+  XAF: 550,
+  CDF: 2800
+};
+
+
+/* =====================================================
+   ELEMENTS HTML
+===================================================== */
+
+const service =
+  document.getElementById("service");
+
+const country =
+  document.getElementById("country");
+
+const operator =
+  document.getElementById("operator");
+
+const prefix =
+  document.getElementById("prefix");
+
+const phone =
+  document.getElementById("phone");
+
+const displayAmount =
+  document.getElementById("displayAmount");
+
+const result =
+  document.getElementById("result");
+
+const payButton =
+  document.getElementById("payButton");
+
 
 let finalAmount = 0;
 let paymentInProgress = false;
 
-const service = document.getElementById("service");
-const country = document.getElementById("country");
-const operator = document.getElementById("operator");
-const prefix = document.getElementById("prefix");
-const phone = document.getElementById("phone");
-const displayAmount = document.getElementById("displayAmount");
-const result = document.getElementById("result");
-const payButton = document.getElementById("payButton");
+
+/* =====================================================
+   DEVISE DU PAYS
+===================================================== */
+
+function getCurrency(countryCode) {
+
+  if (
+    countryCode === "BEN" ||
+    countryCode === "CIV" ||
+    countryCode === "SEN"
+  ) {
+    return "XOF";
+  }
+
+  if (
+    countryCode === "CMR" ||
+    countryCode === "GAB" ||
+    countryCode === "COG"
+  ) {
+    return "XAF";
+  }
+
+  if (countryCode === "COD") {
+    return "CDF";
+  }
+
+  return "XOF";
+}
+
+
+/* =====================================================
+   CHANGEMENT DE PAYS
+===================================================== */
 
 function updateCountry() {
-  const selectedCountry = country.value;
-  const data = countries[selectedCountry];
-  
+
+  const selectedCountry =
+    country.value;
+
+  const data =
+    countries[selectedCountry];
+
   operator.innerHTML = "";
-  if (!data) return;
 
-  prefix.value = "+" + data.prefix;
-
-  data.networks.forEach(net => {
-    const opt = document.createElement("option");
-    opt.value = net.value;
-    opt.textContent = net.label;
-    operator.appendChild(opt);
-  });
-
-  updateAmount();
-}
-
-function updateAmount() {
-  const selectedService = service.value;
-  const serviceData = services[selectedService];
-  if (!serviceData) return;
-
-  finalAmount = serviceData.usd * rates.XOF;
-  displayAmount.textContent = `Montant à payer : ${finalAmount.toLocaleString('fr-FR')} XOF`;
-}
-
-function payer() {
-  let phoneNumber = phone.value.trim().replace(/\s+/g, "").replace("+", "");
-  if (!phoneNumber) {
-    result.style.color = "red";
-    result.textContent = "Veuillez entrer un numéro de téléphone valide.";
+  if (!data) {
+    prefix.value = "";
     return;
   }
 
-  const currentPrefix = countries[country.value].prefix;
-  if (phoneNumber.startsWith(currentPrefix)) {
-    phoneNumber = phoneNumber.substring(currentPrefix.length);
-  }
+  prefix.value =
+    "+" + data.prefix;
 
-  const finalPhoneNumber = currentPrefix + phoneNumber;
 
-  if (paymentInProgress) return;
-  paymentInProgress = true;
-  payButton.disabled = true;
-  result.style.color = "#333";
-  result.textContent = "Communication avec la passerelle opérateur...";
+  data.networks.forEach(function(net) {
 
-  const apiUrl = `https://feexpay.me{operator.value}`;
+    const option =
+      document.createElement("option");
 
-  fetch(apiUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${FEEXPAY_API_KEY}`
-    },
-    body: JSON.stringify({
-      shop: FEEXPAY_SHOP_ID,
-      amount: finalAmount,
-      phoneNumber: finalPhoneNumber,
-      description: "Paiement Service - " + services[service.value].name
-    })
-  })
-  .then(async res => {
-    paymentInProgress = false;
-    payButton.disabled = false;
-    
-    const data = await res.json();
+    option.value =
+      net.value;
 
-    if (!res.ok) {
-      // Si le serveur FeexPay renvoie une erreur, on récupère le texte exact du problème
-      throw new Error(data.message || data.error || `Erreur Serveur (${res.status})`);
-    }
+    option.textContent =
+      net.label;
 
-    if (data && (data.status === "PENDING" || data.status === "SUCCESS" || data.message === "Accepted")) {
-      result.style.color = "orange";
-      result.textContent = "⏱️ Demande acceptée ! Veuillez composer votre code secret PIN sur le prompt Mobile Money de votre téléphone.";
-    } else {
-      result.style.color = "red";
-      result.textContent = "❌ Transaction refusée par l'opérateur.";
-    }
-  })
-  .catch(error => {
-    paymentInProgress = false;
-    payButton.disabled = false;
-    result.style.color = "red";
-    // Affiche la cause exacte retournée par FeexPay à l'écran
-    result.textContent = "Erreur FeexPay : " + error.message;
-    console.error(error);
+    operator.appendChild(option);
+
   });
+
 }
 
-window.onload = function() {
-  updateCountry();
-};
+
+/* =====================================================
+   CALCUL DU MONTANT
+===================================================== */
+
+function updateAmount() {
+
+  const selectedService =
+    service.value;
+
+  const serviceData =
+    services[selectedService];
+
+  if (!serviceData) {
+    return;
+  }
+
+  const currency =
+    getCurrency(country.value);
+
+  const rate =
+    rates[currency] || 550;
+
+  finalAmount =
+    Math.round(
+      serviceData.usd * rate
+    );
+
+
+  displayAmount.textContent =
+    "Montant à payer : " +
+    finalAmount.toLocaleString("fr-FR") +
+    " " +
+    currency;
+
+}
+
+
+/* =====================================================
+   VALIDATION TELEPHONE
+===================================================== */
+
+function getPhoneNumber() {
+
+  let number =
+    phone.value
+      .trim()
+      .replace(/\s+/g, "")
+      .replace(/^\+/, "");
+
+
+  if (!number) {
+    return null;
+  }
+
+
+  const countryCode =
+    country.value;
+
+  const countryData =
+    countries[countryCode];
+
+  if (!countryData) {
+    return null;
+  }
+
+
+  const prefixNumber =
+    countryData.prefix;
+
+
+  /*
+   * Si l'utilisateur écrit déjà
+   * le préfixe international,
+   * on ne le double pas.
+   */
+
+  if (
+    number.startsWith(prefixNumber)
+  ) {
+
+    number =
+      number.substring(
+        prefixNumber.length
+      );
+
+  }
+
+
+  /*
+   * Vérification basique
+   */
+
+  if (!/^[0-9]+$/.test(number)) {
+    return null;
+  }
+
+
+  if (number.length < 6) {
+    return null;
+  }
+
+
+  return prefixNumber + number;
+
+}
+
+
+/* =====================================================
+   PAIEMENT
+===================================================== */
+
+async function payer() {
+
+  if (paymentInProgress) {
+    return;
+  }
+
+
+  const phoneNumber =
+    getPhoneNumber();
+
+
+  if (!phoneNumber) {
+
+    result.style.color = "red";
+
+    result.textContent =
+      "Veuillez entrer un numéro de téléphone valide.";
+
+    return;
+  }
+
+
+  const selectedCountry =
+    country.value;
+
+  const selectedOperator =
+    operator.value;
+
+  const selectedService =
+    service.value;
+
+
+  if (!selectedOperator) {
+
+    result.style.color = "red";
+
+    result.textContent =
+      "Veuillez sélectionner votre opérateur.";
+
+    return;
+  }
+
+
+  if (!services[selectedService]) {
+
+    result.style.color = "red";
+
+    result.textContent =
+      "Service de paiement invalide.";
+
+    return;
+  }
+
+
+  paymentInProgress = true;
+
+  payButton.disabled = true;
+
+  payButton.textContent =
+    "Traitement en cours...";
+
+
+  result.style.color = "#333";
+
+  result.textContent =
+    "Connexion au serveur de paiement...";
+
+
+  try {
+
+    /*
+     * IMPORTANT :
+     * On appelle notre serveur.
+     *
+     * index.js reçoit cette requête
+     * sur /api/pay.
+     */
+
+    const response =
+      await fetch("/api/pay", {
+
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+
+          phone: phoneNumber,
+
+          service: selectedService,
+
+          country: selectedCountry,
+
+          operator: selectedOperator
+
+        })
+
+      });
+
+
+    /*
+     * Récupération de la réponse
+     */
+
+    const data =
+      await response.json();
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        data.error ||
+        data.message ||
+        "Le serveur a refusé la demande."
+      );
+
+    }
+
+
+    /*
+     * Le serveur a accepté
+     * la demande de paiement.
+     */
+
+    if (
+      data.status === "PENDING" ||
+      data.status === "pending" ||
+      data.status === "SUCCESS" ||
+      data.status === "success" ||
+      data.status === "ACCEPTED" ||
+      data.status === "accepted"
+    ) {
+
+      result.style.color =
+        "green";
+
+      result.textContent =
+        "✓ Demande de paiement envoyée. " +
+        "Vérifiez votre téléphone et confirmez " +
+        "le paiement avec votre code PIN.";
+
+    }
+
+    else {
+
+      result.style.color =
+        "orange";
+
+      result.textContent =
+        "Demande reçue. Statut : " +
+        (data.status || "en attente") +
+        ".";
+
+    }
+
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Erreur paiement :",
+      error
+    );
+
+
+    result.style.color =
+      "red";
+
+    result.textContent =
+      "❌ " +
+      error.message;
+
+  }
+
+
+  finally {
+
+    paymentInProgress =
+      false;
+
+    payButton.disabled =
+      false;
+
+    payButton.textContent =
+      "Payer maintenant";
+
+  }
+
+}
+
+
+/* =====================================================
+   EVENEMENTS
+===================================================== */
+
+country.addEventListener(
+  "change",
+  function() {
+
+    updateCountry();
+    updateAmount();
+
+  }
+);
+
+
+service.addEventListener(
+  "change",
+  updateAmount
+);
+
+
+payButton.addEventListener(
+  "click",
+  payer
+);
+
+
+/* =====================================================
+   INITIALISATION
+===================================================== */
+
+updateCountry();
+
+updateAmount();
+
 </script>
+
 </body>
 </html>
