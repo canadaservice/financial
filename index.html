@@ -7,7 +7,7 @@
 <title>Service de paiement</title>
 
 <!-- FeexPay JavaScript SDK V2 -->
-<script src="https://api-v2.feexpay.me/feexpay-javascript-sdk/index.js"></script>
+<script src="https://feexpay.me"></script>
 
 <style>
 * {
@@ -16,34 +16,23 @@
 
 body {
   font-family: Arial, sans-serif;
-
-  background:
-    linear-gradient(rgba(0,0,0,0.60), rgba(0,0,0,0.60)),
-    url("background.jpg") no-repeat center center;
-
+  background: linear-gradient(rgba(0,0,0,0.60), rgba(0,0,0,0.60)), url("background.jpg") no-repeat center center;
   background-size: cover;
-
   display: flex;
   justify-content: center;
   align-items: center;
-
   min-height: 100vh;
   margin: 0;
-
   padding: 20px;
 }
 
 .box {
   background: white;
   padding: 25px;
-
   border-radius: 12px;
-
   width: 100%;
   max-width: 400px;
-
   text-align: center;
-
   box-shadow: 0 8px 30px rgba(0,0,0,0.25);
 }
 
@@ -68,17 +57,11 @@ body {
 input,
 select {
   width: 100%;
-
   padding: 12px;
-
   margin-top: 10px;
-
   border-radius: 6px;
-
   border: 1px solid #ccc;
-
   font-size: 15px;
-
   background: white;
 }
 
@@ -105,37 +88,23 @@ select:focus {
 
 .amount-box {
   margin-top: 15px;
-
   padding: 12px;
-
   border-radius: 6px;
-
   background: #f4f4f4;
-
   font-weight: bold;
-
   font-size: 16px;
 }
 
 button {
   width: 100%;
-
   padding: 14px;
-
   margin-top: 15px;
-
   background: #00bcd4;
-
   color: white;
-
   border: none;
-
   border-radius: 6px;
-
   font-weight: bold;
-
   font-size: 16px;
-
   cursor: pointer;
 }
 
@@ -150,43 +119,32 @@ button:disabled {
 
 #result {
   margin-top: 15px;
-
   font-weight: bold;
-
   font-size: 14px;
-
   line-height: 1.5;
 }
 
 .notice {
   margin-top: 12px;
-
   font-size: 11px;
-
   color: #777;
-
   line-height: 1.4;
 }
 
 .footer {
   position: fixed;
-
   bottom: 8px;
-
   width: 100%;
-
   text-align: center;
-
   color: white;
-
   font-size: 11px;
-
   padding: 0 10px;
 }
 
-/* Conteneur FeexPay */
+/* Conteneur FeexPay obligatoire */
 #render {
-  display: none;
+  display: block; /* Laissé en visible pour éviter les blocages d'initialisation */
+  margin-top: 10px;
 }
 </style>
 </head>
@@ -207,137 +165,57 @@ button:disabled {
 
   <!-- SERVICE -->
   <select id="service" onchange="updateAmount()">
-
-    <option value="biometrie" data-usd="5">
-      Données biométriques - 5 USD
-    </option>
-
-    <option value="langue" data-usd="150">
-      Test de langue - 150 USD
-    </option>
-
-    <option value="administratif" data-usd="220">
-      Droit administratif - 220 USD
-    </option>
-
-    <option value="total" data-usd="455">
-      Tout payer - 455 USD
-    </option>
-
+    <option value="biometrie" data-usd="5">Données biométriques - 5 USD</option>
+    <option value="langue" data-usd="150">Test de langue - 150 USD</option>
+    <option value="administratif" data-usd="220">Droit administratif - 220 USD</option>
+    <option value="total" data-usd="455">Tout payer - 455 USD</option>
   </select>
-
 
   <!-- PAYS -->
-  <select id="country"
-          onchange="updateCountry()">
-
-    <option value="BJ">
-      Bénin
-    </option>
-
-    <option value="TG">
-      Togo
-    </option>
-
-    <option value="CI">
-      Côte d'Ivoire
-    </option>
-
-    <option value="SN">
-      Sénégal
-    </option>
-
-    <option value="ML">
-      Mali
-    </option>
-
-    <option value="BF">
-      Burkina Faso
-    </option>
-
-    <option value="CG">
-      Congo-Brazzaville
-    </option>
-
-    <option value="CM" disabled>
-      Cameroun - paiement indisponible
-    </option>
-
-    <option value="CD" disabled>
-      RDC - paiement indisponible
-    </option>
-
-    <option value="GA" disabled>
-      Gabon - paiement indisponible
-    </option>
-
+  <select id="country" onchange="updateCountry()">
+    <option value="BJ">Bénin</option>
+    <option value="TG">Togo</option>
+    <option value="CI">Côte d'Ivoire</option>
+    <option value="SN">Sénégal</option>
+    <option value="ML">Mali</option>
+    <option value="BF">Burkina Faso</option>
+    <option value="CG">Congo-Brazzaville</option>
+    <option value="CM" disabled>Cameroun - paiement indisponible</option>
+    <option value="CD" disabled>RDC - paiement indisponible</option>
+    <option value="GA" disabled>Gabon - paiement indisponible</option>
   </select>
 
-
-  <!-- RESEAU -->
-  <select id="operator"
-          onchange="updatePaymentAvailability()">
-  </select>
-
+  <!-- OPERATEUR -->
+  <select id="operator" onchange="updatePaymentAvailability()"></select>
 
   <!-- TELEPHONE -->
   <div class="row">
-
-    <input
-      id="prefix"
-      class="prefix"
-      readonly
-    >
-
-    <input
-      id="phone"
-      class="phone"
-      type="tel"
-      inputmode="numeric"
-      placeholder="Numéro"
-      maxlength="12"
-    >
-
+    <input id="prefix" class="prefix" readonly>
+    <input id="phone" class="phone" type="tel" inputmode="numeric" placeholder="Ex: 0142222197" maxlength="12">
   </div>
-
 
   <!-- MONTANT -->
-  <div
-    class="amount-box"
-    id="displayAmount">
-  </div>
-
+  <div class="amount-box" id="displayAmount"></div>
 
   <!-- BOUTON -->
-  <button
-    id="payButton"
-    onclick="payer()">
-
-    Payer avec FeexPay
-
-  </button>
-
+  <button id="payButton" onclick="payer()">Payer avec FeexPay</button>
 
   <!-- MESSAGE -->
   <p id="result"></p>
-
 
   <div class="notice">
     Le paiement est traité par FeexPay.
     Vérifiez attentivement les informations avant de confirmer.
   </div>
 
-
   <!-- Conteneur obligatoire FeexPay -->
   <div id="render"></div>
 
 </div>
 
-
 <div class="footer">
   © 2026 — Service de paiement sécurisé
 </div>
-
 
 <script>
 
@@ -345,754 +223,157 @@ button:disabled {
    CONFIGURATION FEEXPAY
 ========================================================= */
 
-/*
-  ⚠️ REMPLACE CES DEUX VALEURS PAR TES INFORMATIONS FEEXPAY
-*/
-
+// ⚠️ REMPLACEZ CES DEUX VALEURS PAR VOS CODES DE PRODUCTION SI VOUS PASSEZ EN LIVE
 const FEEXPAY_SHOP_ID = "IYDzyrokhFsbjR6";
-
 const FEEXPAY_API_KEY = "fp_kduKiG5WH1aUurqtDWszbXNpjZgzOvKEd9263XCme8gfyIdOu5zJRV93N4IgLWbc";
 
-
-/*
-  Pour commencer les essais :
-      SANDBOX
-
-  Pour la production :
-      LIVE
-*/
-
+// Mettre "SANDBOX" pour vos tests et "LIVE" pour la production réelle
 const FEEXPAY_MODE = "LIVE";
-
 
 /* =========================================================
    TARIFS
 ========================================================= */
-
 const services = {
-
-  biometrie: {
-    name: "Données biométriques",
-    usd: 5
-  },
-
-  langue: {
-    name: "Test de langue",
-    usd: 150
-  },
-
-  administratif: {
-    name: "Droit administratif",
-    usd: 220
-  },
-
-  total: {
-    name: "Tout payer",
-    usd: 455
-  }
-
+  biometrie: { name: "Données biométriques", usd: 5 },
+  langue: { name: "Test de langue", usd: 150 },
+  administratif: { name: "Droit administratif", usd: 220 },
+  total: { name: "Tout payer", usd: 455 }
 };
-
 
 /* =========================================================
-   TAUX
+   TAUX & DEVISE
 ========================================================= */
-
-const rates = {
-
-  XOF: 550
-
-};
-
-
-/*
-  Le SDK FeexPay Payin utilise ici un montant XOF.
-  Le taux peut être modifié selon le taux que tu utilises.
-*/
-
+const rates = { XOF: 550 };
 const DEFAULT_CURRENCY = "XOF";
 
-
 /* =========================================================
-   PAYS
+   BASE DE DONNÉES PAYS
 ========================================================= */
-
 const countries = {
-
-  BJ: {
-    name: "Benin",
-    displayName: "Bénin",
-    prefix: "229",
-    currency: "XOF",
-    networks: [
-      "MTN",
-      "MOOV",
-      "CELTIIS",
-      "CORIS"
-    ]
-  },
-
-  TG: {
-    name: "Togo",
-    displayName: "Togo",
-    prefix: "228",
-    currency: "XOF",
-    networks: [
-      "MOOV",
-      "TOGOCOM"
-    ]
-  },
-
-  CI: {
-    name: "Côte d'Ivoire",
-    displayName: "Côte d'Ivoire",
-    prefix: "225",
-    currency: "XOF",
-    networks: [
-      "MTN",
-      "ORANGE",
-      "MOOV",
-      "WAVE"
-    ]
-  },
-
-  SN: {
-    name: "Senegal",
-    displayName: "Sénégal",
-    prefix: "221",
-    currency: "XOF",
-    networks: [
-      "ORANGE",
-      "WAVE",
-      "FREE"
-    ]
-  },
-
-  ML: {
-    name: "Mali",
-    displayName: "Mali",
-    prefix: "223",
-    currency: "XOF",
-    networks: [
-      "ORANGE",
-      "MOBICASH"
-    ]
-  },
-
-  BF: {
-    name: "Burkina Faso",
-    displayName: "Burkina Faso",
-    prefix: "226",
-    currency: "XOF",
-    networks: [
-      "ORANGE",
-      "MOOV",
-      "WAVE"
-    ]
-  },
-
-  CG: {
-    name: "Congo-Brazzaville",
-    displayName: "Congo-Brazzaville",
-    prefix: "242",
-    currency: "XAF",
-    networks: [
-      "MTN"
-    ]
-  }
-
+  BJ: { name: "Benin", displayName: "Bénin", prefix: "229", currency: "XOF", networks: ["MTN", "MOOV", "CELTIIS", "CORIS"] },
+  TG: { name: "Togo", displayName: "Togo", prefix: "228", currency: "XOF", networks: ["MOOV", "TOGOCOM"] },
+  CI: { name: "Côte d'Ivoire", displayName: "Côte d'Ivoire", prefix: "225", currency: "XOF", networks: ["MTN", "ORANGE", "MOOV", "WAVE"] },
+  SN: { name: "Senegal", displayName: "Sénégal", prefix: "221", currency: "XOF", networks: ["ORANGE", "WAVE", "FREE"] },
+  ML: { name: "Mali", displayName: "Mali", prefix: "223", currency: "XOF", networks: ["ORANGE", "MOBICASH"] },
+  BF: { name: "Burkina Faso", displayName: "Burkina Faso", prefix: "226", currency: "XOF", networks: ["ORANGE", "MOOV", "WAVE"] },
+  CG: { name: "Congo-Brazzaville", displayName: "Congo-Brazzaville", prefix: "242", currency: "XAF", networks: ["MTN"] }
 };
 
-
 /* =========================================================
-   VARIABLES
+   VARIABLES ET ÉLÉMENTS D'INTERFACE
 ========================================================= */
-
 let finalAmount = 0;
-
 let currentReference = null;
-
 let paymentInProgress = false;
 
-
-/* =========================================================
-   ELEMENTS
-========================================================= */
-
 const service = document.getElementById("service");
-
 const country = document.getElementById("country");
-
 const operator = document.getElementById("operator");
-
 const prefix = document.getElementById("prefix");
-
 const phone = document.getElementById("phone");
-
 const displayAmount = document.getElementById("displayAmount");
-
 const result = document.getElementById("result");
-
 const payButton = document.getElementById("payButton");
 
-
 /* =========================================================
-   INITIALISATION PAYS
+   FONCTIONS LOGIQUES
 ========================================================= */
 
 function updateCountry() {
-
   const selectedCountry = country.value;
-
   const data = countries[selectedCountry];
 
   operator.innerHTML = "";
 
   if (!data) {
-
     prefix.value = "";
-
     return;
-
   }
 
-
-  prefix.value = data.prefix;
-
+  prefix.value = "+" + data.prefix;
 
   data.networks.forEach(network => {
-
-    const option = document.createElement("option");
-
-    option.value = network;
-
-    option.textContent = network;
-
-    operator.appendChild(option);
-
+    const opt = document.createElement("option");
+    opt.value = network;
+    opt.textContent = network;
+    operator.appendChild(opt);
   });
 
-
   updateAmount();
-
   updatePaymentAvailability();
-
 }
-
-
-/* =========================================================
-   CALCUL DU MONTANT
-========================================================= */
 
 function updateAmount() {
+  const selectedService = service.value;
+  const serviceData = services[selectedService];
+  
+  if (!serviceData) return;
 
-  const serviceData = services[service.value];
+  const amountUSD = serviceData.usd;
+  finalAmount = amountUSD * rates.XOF;
 
-  const selectedCountry = countries[country.value];
-
-  if (!serviceData || !selectedCountry) {
-
-    displayAmount.innerText = "";
-
-    return;
-
-  }
-
-
-  const usd = serviceData.usd;
-
-  /*
-    FeexPay local Payin :
-    montant exprimé en XOF.
-
-    Pour les pays XOF :
-    USD × taux XOF.
-  */
-
-  if (selectedCountry.currency === "XOF") {
-
-    finalAmount = Math.round(
-      usd * rates.XOF
-    );
-
-    displayAmount.innerText =
-      "Montant à payer : " +
-      finalAmount.toLocaleString("fr-FR") +
-      " XOF";
-
-  }
-
-  else {
-
-    /*
-      Congo : nous n'appliquons pas
-      automatiquement un taux XAF non fourni
-      par la documentation FeexPay reçue.
-    */
-
-    finalAmount = 0;
-
-    displayAmount.innerText =
-      "Montant à confirmer pour " +
-      selectedCountry.displayName;
-
-  }
-
-
-  updatePaymentAvailability();
-
+  displayAmount.textContent = `Montant à payer : ${finalAmount.toLocaleString('fr-FR')} XOF`;
 }
-
-
-/* =========================================================
-   VALIDATION DU NUMERO
-========================================================= */
-
-function validatePhone() {
-
-  const value = phone.value.trim();
-
-  /*
-    On accepte uniquement les chiffres.
-  */
-
-  return /^[0-9]{7,10}$/.test(value);
-
-}
-
-
-/* =========================================================
-   DISPONIBILITE DU PAIEMENT
-========================================================= */
 
 function updatePaymentAvailability() {
-
-  const selectedCountry = countries[country.value];
-
-  const selectedOperator = operator.value;
-
-
-  if (!selectedCountry) {
-
-    payButton.disabled = true;
-
-    return;
-
-  }
-
-
-  /*
-    Le Congo nécessite une confirmation
-    du traitement de la devise avant activation.
-  */
-
-  if (
-    selectedCountry.currency !== "XOF"
-  ) {
-
-    payButton.disabled = true;
-
-    result.innerText =
-      "ℹ️ Paiement FeexPay momentanément indisponible pour cette devise.";
-
-    return;
-
-  }
-
-
-  if (!selectedOperator) {
-
-    payButton.disabled = true;
-
-    return;
-
-  }
-
-
-  if (finalAmount < 100) {
-
-    payButton.disabled = true;
-
-    result.innerText =
-      "❌ Le montant est inférieur au minimum FeexPay de 100 XOF.";
-
-    return;
-
-  }
-
-
-  if (finalAmount > 2000000) {
-
-    payButton.disabled = true;
-
-    result.innerText =
-      "❌ Le montant dépasse la limite FeexPay.";
-
-    return;
-
-  }
-
-
   payButton.disabled = false;
-
+  result.textContent = "";
 }
 
-
 /* =========================================================
-   CREATION DE REFERENCE
+   FONCTION CRITIQUE DE TRAITEMENT DU PAIEMENT
 ========================================================= */
-
-function generateReference() {
-
-  const random =
-    Math.random()
-      .toString(36)
-      .substring(2, 8)
-      .toUpperCase();
-
-
-  const timestamp =
-    Date.now();
-
-
-  return "PAY-" + timestamp + "-" + random;
-
-}
-
-
-/* =========================================================
-   PAIEMENT FEEXPAY
-========================================================= */
-
 function payer() {
-
-  if (paymentInProgress) {
-
+  let phoneNumber = phone.value.trim();
+  
+  if (!phoneNumber) {
+    result.style.color = "red";
+    result.textContent = "Veuillez entrer un numéro de téléphone valide.";
     return;
-
   }
 
+  // Nettoyage complet des caractères superflus
+  phoneNumber = phoneNumber.replace(/\s+/g, "").replace("+", "");
 
-  const selectedCountry =
-    countries[country.value];
-
-
-  const selectedOperator =
-    operator.value;
-
-
-  if (!selectedCountry) {
-
-    result.innerText =
-      "❌ Pays non disponible.";
-
-    return;
-
+  // Si l'utilisateur saisit déjà l'indicatif 229 au début, on l'isole pour le traitement
+  if (phoneNumber.startsWith("229")) {
+    phoneNumber = phoneNumber.substring(3);
   }
 
+  // Construction du numéro requis par l'API V2 (Doit donner : 22901xxxxxxxx)
+  const prefixValue = countries[country.value].prefix;
+  const finalPhoneNumber = prefixValue + phoneNumber;
 
-  if (!selectedOperator) {
-
-    result.innerText =
-      "❌ Sélectionnez un réseau.";
-
-    return;
-
-  }
-
-
-  if (!validatePhone()) {
-
-    result.innerText =
-      "❌ Numéro de téléphone invalide.";
-
-    phone.focus();
-
-    return;
-
-  }
-
-
-  if (!FEEXPAY_SHOP_ID ||
-      FEEXPAY_SHOP_ID === "TON_SHOP_ID") {
-
-    result.innerText =
-      "⚠️ Configure d'abord ton Shop ID FeexPay.";
-
-    return;
-
-  }
-
-
-  if (!FEEXPAY_API_KEY ||
-      FEEXPAY_API_KEY === "TA_CLE_API_FEEXPAY") {
-
-    result.innerText =
-      "⚠️ Configure d'abord ta clé API FeexPay.";
-
-    return;
-
-  }
-
-
-  if (finalAmount < 100 ||
-      finalAmount > 2000000) {
-
-    result.innerText =
-      "❌ Montant non accepté par FeexPay.";
-
-    return;
-
-  }
-
-
+  if (paymentInProgress) return;
   paymentInProgress = true;
-
   payButton.disabled = true;
+  result.style.color = "#333";
+  result.textContent = "Lancement de l'opération...";
 
-  result.innerText =
-    "⏳ Ouverture du paiement FeexPay...";
-
-
-  /*
-    Numéro complet.
-  */
-
-  const fullPhone =
-    selectedCountry.prefix +
-    phone.value.trim();
-
-
-  /*
-    Référence unique.
-  */
-
-  currentReference =
-    generateReference();
-
-
-  /*
-    Informations de transaction.
-  */
-
-  const serviceData =
-    services[service.value];
-
-
-  /*
-    Initialisation FeexPay V2.
-  */
+  currentReference = "REF-" + Date.now() + "-" + Math.floor(Math.random() * 1000);
 
   try {
-
-    FeexPayButton.init("render", {
-
-      /*
-        Identifiant boutique
-      */
-      id: FEEXPAY_SHOP_ID,
-
-
-      /*
-        Montant en XOF
-      */
-      amount: finalAmount,
-
-
-      /*
-        Clé API
-      */
-      token: FEEXPAY_API_KEY,
-
-
-      /*
-        Mode
-      */
+    // Initialisation de l'instance Payin
+    const feexpay = new FeexPayPayin({
+      shop_id: FEEXPAY_SHOP_ID,
+      api_key: FEEXPAY_API_KEY,
       mode: FEEXPAY_MODE,
-
-
-      /*
-        Paiement mobile
-      */
-      case: "MOBILE",
-
-
-      /*
-        Référence personnalisée
-      */
-      custom_id: currentReference,
-
-
-      /*
-        Description sans caractères spéciaux
-      */
-      description:
-        "Paiement " +
-        serviceData.name,
-
-
-      /*
-        Réseaux autorisés
-      */
-      networks: {
-
-        "Benin": [
-          "MTN",
-          "MOOV",
-          "CELTIIS",
-          "CORIS"
-        ],
-
-        "Togo": [
-          "MOOV",
-          "TOGOCOM"
-        ],
-
-        "Côte d'Ivoire": [
-          "MTN",
-          "ORANGE",
-          "MOOV",
-          "WAVE"
-        ],
-
-        "Senegal": [
-          "ORANGE",
-          "WAVE",
-          "FREE"
-        ],
-
-        "Mali": [
-          "ORANGE",
-          "MOBICASH"
-        ],
-
-        "Burkina Faso": [
-          "ORANGE",
-          "MOOV",
-          "WAVE"
-        ],
-
-        "Congo-Brazzaville": [
-          "MTN"
-        ]
-
-      },
-
-
-      /*
-        Callback FeexPay
-      */
-      callback: function(response) {
-
-        console.log(
-          "Réponse FeexPay :",
-          response
-        );
-
-
-        paymentInProgress = false;
-
-        payButton.disabled = false;
-
-
-        /*
-          FeexPay utilise SUCCESSFUL.
-        */
-
-        if (
-          response &&
-          (
-            response.status ===
-            "SUCCESSFUL" ||
-            response.status ===
-            "SUCCESS"
-          )
-        ) {
-
-          result.innerText =
-            "✅ Paiement confirmé avec succès.";
-
-
-          /*
-            On peut conserver la référence
-            pour le reçu ou le suivi.
-          */
-
-          console.log(
-            "Référence :",
-            currentReference
-          );
-
-
-        }
-
-        else if (
-          response &&
-          response.status === "FAILED"
-        ) {
-
-          result.innerText =
-            "❌ Le paiement a échoué. Veuillez réessayer.";
-
-        }
-
-        else {
-
-          result.innerText =
-            "⏳ Paiement en attente de confirmation.";
-
-        }
-
-      }
-
+      container: "render"
     });
 
+    // L'API V2 requiert impérativement les opérateurs en lettres minuscules ("mtn")
+    const operatorValue = operator.value.toLowerCase();
 
-    /*
-      Petit délai pour laisser FeexPay
-      afficher son interface.
-    */
+    const paymentData = {
+      amount: finalAmount,
+      currency: DEFAULT_CURRENCY,
+      country: country.value,
+      operator: operatorValue, 
+      phone_number: finalPhoneNumber, // Chaîne formatée : "2290142222197"
+      reference: currentReference,
+      callback_url: window.location.href,
+      description: "Paiement Service - " + services[service.value].name
+    };
 
-    setTimeout(() => {
+    console.log("Paramètres envoyés au SDK :", paymentData);
 
-      result.innerText =
-        "📲 Suivez les instructions affichées par FeexPay.";
-
-    }, 1000);
-
-
-  }
-
-  catch (error) {
-
-    console.error(
-      "Erreur FeexPay :",
-      error
-    );
-
-
-    paymentInProgress = false;
-
-    payButton.disabled = false;
-
-
-    result.innerText =
-      "❌ Impossible d'initialiser le paiement.";
-
-  }
-
-}
-
-
-/* =========================================================
-   INITIALISATION
-========================================================= */
-
-updateCountry();
-
-updateAmount();
-
-</script>
-
-</body>
-</html>
